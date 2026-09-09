@@ -1,0 +1,10 @@
+{
+    "printer_1": {
+        "name": "Prusa MK4",
+        "extruder_count": 1
+    },
+    "printer_2": {
+        "name": "Prusa XL",
+        "extruder_count": 5
+    }
+}
