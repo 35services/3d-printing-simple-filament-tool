@@ -1,0 +1,48 @@
+{
+    "printer_1": [
+        {
+            "hex": "#ffffff",
+            "color_name": "",
+            "material": "PLA",
+            "is_club": "0",
+            "owner": ""
+        }
+    ],
+    "printer_2": [
+        {
+            "hex": "#ff0000",
+            "color_name": "",
+            "material": "PVA \/ BVOH",
+            "is_club": "1",
+            "owner": ""
+        },
+        {
+            "hex": "#ffffff",
+            "color_name": "",
+            "material": "PLA",
+            "is_club": "0",
+            "owner": ""
+        },
+        {
+            "hex": "#ffffff",
+            "color_name": "",
+            "material": "PLA",
+            "is_club": "0",
+            "owner": ""
+        },
+        {
+            "hex": "#ffffff",
+            "color_name": "",
+            "material": "PLA",
+            "is_club": "0",
+            "owner": ""
+        },
+        {
+            "hex": "#ffffff",
+            "color_name": "",
+            "material": "PLA",
+            "is_club": "0",
+            "owner": ""
+        }
+    ]
+}

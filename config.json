@@ -6,5 +6,10 @@
     "printer_2": {
         "name": "Prusa XL",
         "extruder_count": 5
-    }
+    },
+    "material_list": [
+        "PLA", "PETG", "PETG HT", "Glow in the dark", "ASA", "ABS",
+        "PC (Polycarbonate)", "CPE", "PVA / BVOH", "HIPS",
+        "PP (Polypropylene)", "Flex", "nGen", "PA (Nylon)"
+    ]
 }

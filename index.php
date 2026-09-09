@@ -13,6 +13,9 @@ if (file_exists($config_path)) {
     }
 }
 
+$material_list = $printer_config['material_list'] ?? ['PLA'];
+unset($printer_config['material_list']);
+
 $current_state = [];
 if (file_exists($state_path)) {
     $file_size = filesize($state_path);
@@ -25,21 +28,56 @@ if (file_exists($state_path)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $new_state = $_POST['data'] ?? [];
+    $raw_state = $_POST['data'] ?? null;
+    $clean_state = [];
+
+    if (is_array($raw_state)) {
+        foreach ($raw_state as $printer_id => $extruder_group) {
+            if (is_array($extruder_group)) {
+                $clean_state[$printer_id] = [];
+                foreach ($extruder_group as $index => $item) {
+                    $clean_item = [
+                        'hex' => '#ffffff',
+                        'color_name' => '',
+                        'material' => 'PLA',
+                        'owner' => '',
+                        'is_club' => '0'
+                    ];
+
+                    if (isset($item['hex']) && preg_match('/^#[a-fA-F0-9]{6}$/', $item['hex'])) {
+                        $clean_item['hex'] = $item['hex'];
+                    }
+
+                    if (isset($item['color_name'])) {
+                        $clean_item['color_name'] = htmlspecialchars($item['color_name'], ENT_QUOTES, 'UTF-8');
+                    }
+
+                    if (isset($item['material']) && in_array($item['material'], $material_list)) {
+                        $clean_item['material'] = $item['material'];
+                    }
+
+                    if (isset($item['owner'])) {
+                        $clean_item['owner'] = htmlspecialchars($item['owner'], ENT_QUOTES, 'UTF-8');
+                    }
+
+                    if (isset($item['is_club']) && $item['is_club'] === '1') {
+                        $clean_item['is_club'] = '1';
+                    }
+
+                    $clean_state[$printer_id][intval($index)] = $clean_item;
+                }
+            }
+        }
+    }
+
     $file_handle = fopen($state_path, 'w');
     if ($file_handle) {
-        fwrite($file_handle, json_encode($new_state, JSON_PRETTY_PRINT));
+        fwrite($file_handle, json_encode($clean_state, JSON_PRETTY_PRINT));
         fclose($file_handle);
     }
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-
-$material_array = [
-    'PLA', 'PETG', 'PETG HT', 'Glow in the dark', 'ASA', 'ABS',
-    'PC (Polycarbonate)', 'CPE', 'PVA / BVOH', 'HIPS',
-    'PP (Polypropylene)', 'Flex', 'nGen', 'PA (Nylon)'
-];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -81,7 +119,7 @@ $material_array = [
                             <input type="text" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][color_name]" value="<?php echo htmlspecialchars($saved_data['color_name']); ?>" placeholder="Color Name">
                             
                             <select name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][material]">
-                                <?php foreach ($material_array as $mat): ?>
+                                <?php foreach ($material_list as $mat): ?>
                                     <option value="<?php echo htmlspecialchars($mat); ?>" <?php echo $saved_data['material'] === $mat ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($mat); ?>
                                     </option>
@@ -93,7 +131,7 @@ $material_array = [
                             <label>
                                 <input type="hidden" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="0">
                                 <input type="checkbox" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="1" <?php echo $saved_data['is_club'] === '1' ? 'checked' : ''; ?>>
-                                gehoert 35services e.V.
+                                gehört 35services e.V.
                             </label>
                             <input type="text" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][owner]" value="<?php echo htmlspecialchars($saved_data['owner']); ?>" placeholder="Owner text">
                         </div>
