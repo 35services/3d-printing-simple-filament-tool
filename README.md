@@ -1,9 +1,18 @@
 # Project Readme
 
 ## Summary
-This is a management tool for 3D printer material. It uses PHP and a JSON configuration file. No database is necessary.
+This is a management tool for a 3D printer. It requires PHP and a JSON configuration file. No database is necessary.
 
 ![](screenshot.png)
+
+## Feature List
+* Printer unit and extruder configuration via a JSON file
+* State storage in a separate JSON file
+* Modification without an authentication requirement
+* Color selection via a picker or a hex input field
+* Material dropdown using a predefined option
+* Ownership assignment via a text input or a club checkbox
+* Input validation to prevent a security exploit
 
 ## Setup Instruction
 1. Open a terminal window.
