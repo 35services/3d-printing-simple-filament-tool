@@ -5,6 +5,7 @@ $version_path = 'VERSION';
 
 $app_version = file_exists($version_path) ? trim(file_get_contents($version_path)) : 'unknown';
 
+$raw_config_text = '{}';
 $printer_config = [];
 if (file_exists($config_path)) {
     $file_size = filesize($config_path);
@@ -12,6 +13,7 @@ if (file_exists($config_path)) {
         $file_handle = fopen($config_path, 'r');
         $file_data = fread($file_handle, $file_size);
         fclose($file_handle);
+        $raw_config_text = $file_data;
         $printer_config = json_decode($file_data, true) ?: [];
     }
 }
@@ -40,7 +42,38 @@ if (file_exists($state_path)) {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+$page = $_GET['page'] ?? 'home';
+$config_error = '';
+$config_saved = isset($_GET['saved']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['config_json'])) {
+    $page = 'config';
+    $submitted_config = $_POST['config_json'];
+    $decoded_config = json_decode($submitted_config, true);
+
+    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded_config)) {
+        $file_handle = fopen($config_path, 'w');
+        if ($file_handle) {
+            fwrite($file_handle, json_encode($decoded_config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            fclose($file_handle);
+        }
+        header("Location: " . $_SERVER['PHP_SELF'] . "?page=config&saved=1");
+        exit;
+    }
+
+    $config_error = 'Invalid JSON: ' . json_last_error_msg();
+    $raw_config_text = $submitted_config;
+}
+
+$config_display = $raw_config_text;
+if ($config_error === '') {
+    $decoded_for_display = json_decode($raw_config_text, true);
+    if ($decoded_for_display !== null) {
+        $config_display = json_encode($decoded_for_display, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
     $raw_state = $_POST['data'] ?? null;
     $clean_state = [];
 
@@ -131,10 +164,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin: 0 auto;
         }
 
-        h1 {
+        .page-header {
             max-width: 960px;
             margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .page-header h1 {
+            margin: 0;
             font-size: 1.5rem;
+        }
+
+        .btn-secondary {
+            display: inline-block;
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            background: #fff;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover { background: var(--extruder-bg); }
+
+        .config-form {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .config-textarea {
+            width: 100%;
+            min-height: 60vh;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            padding: 1rem;
+            background: var(--card-bg);
+            color: var(--text);
+            box-sizing: border-box;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        .config-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .alert {
+            max-width: 960px;
+            margin: 0 auto 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #15803d;
         }
 
         .printer-card {
@@ -301,7 +406,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <h1>Filament Management</h1>
+    <?php if ($page === 'config'): ?>
+        <div class="page-header">
+            <h1>Edit Config</h1>
+            <a class="btn-secondary" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">Back to overview</a>
+        </div>
+
+        <?php if ($config_error !== ''): ?>
+            <div class="alert alert-error"><?php echo htmlspecialchars($config_error); ?></div>
+        <?php elseif ($config_saved): ?>
+            <div class="alert alert-success">Config saved.</div>
+        <?php endif; ?>
+
+        <form method="POST" action="?page=config" class="config-form">
+            <textarea name="config_json" class="config-textarea" spellcheck="false"><?php echo htmlspecialchars($config_display); ?></textarea>
+            <button type="submit">Save Config</button>
+        </form>
+    <?php else: ?>
+    <div class="page-header">
+        <h1>Filament Management</h1>
+        <a class="btn-secondary" href="?page=config">Edit Config</a>
+    </div>
     <form method="POST">
         <?php foreach ($printer_config as $machine_id => $machine_data): ?>
             <div class="printer-card">
@@ -404,6 +529,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endforeach; ?>
         <button type="submit">Save</button>
     </form>
+    <?php endif; ?>
     <footer class="app-version">v<?php echo htmlspecialchars($app_version); ?></footer>
 </body>
 </html>

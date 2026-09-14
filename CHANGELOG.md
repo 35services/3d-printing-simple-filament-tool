@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-15
+
+### Added
+- "Edit Config" button that opens `config.json` as formatted, editable JSON with a Save button, so the config can be changed directly from the UI instead of editing the file on disk.
+
+### Fixed
+- Submitting the state-save form no longer runs when the request is actually a config save (and vice versa) — a latent bug from adding the config editor that could have overwritten `state.json` with an empty object.
+
 ## [0.6.0] - 2026-09-15
 
 ### Added
