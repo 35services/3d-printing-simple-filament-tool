@@ -1,48 +1,57 @@
 {
     "printer_1": [
         {
-            "hex": "#ffffff",
-            "color_name": "",
+            "hex": "#97C49B",
+            "color_name": "Frische Wiese",
             "material": "PLA",
-            "is_club": "0",
-            "owner": ""
+            "owner": "Erik",
+            "is_club": "0"
         }
     ],
     "printer_2": [
         {
-            "hex": "#ff0000",
+            "hex": "#ffff00",
             "color_name": "",
-            "material": "PVA \/ BVOH",
-            "is_club": "1",
-            "owner": ""
+            "material": "PETG",
+            "owner": "Falko",
+            "is_club": "0"
         },
         {
             "hex": "#ffffff",
             "color_name": "",
             "material": "PLA",
-            "is_club": "0",
-            "owner": ""
+            "owner": "",
+            "is_club": "0"
         },
         {
             "hex": "#ffffff",
             "color_name": "",
             "material": "PLA",
-            "is_club": "0",
-            "owner": ""
+            "owner": "",
+            "is_club": "0"
         },
         {
             "hex": "#ffffff",
             "color_name": "",
             "material": "PLA",
-            "is_club": "0",
-            "owner": ""
+            "owner": "",
+            "is_club": "0"
         },
         {
             "hex": "#ffffff",
             "color_name": "",
             "material": "PLA",
-            "is_club": "0",
-            "owner": ""
+            "owner": "",
+            "is_club": "0"
+        }
+    ],
+    "printer_3": [
+        {
+            "hex": "#6e6e6e",
+            "color_name": "Urban Grey",
+            "material": "PETG",
+            "owner": "Falko",
+            "is_club": "0"
         }
     ]
-}
+}% 
