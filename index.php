@@ -24,6 +24,9 @@ unset($printer_config['material_list']);
 $color_list = $printer_config['color_list'] ?? [];
 unset($printer_config['color_list']);
 
+$club_label = $printer_config['club_label'] ?? 'gehört 35services e.V.';
+unset($printer_config['club_label']);
+
 $color_images_by_name = [];
 foreach ($color_list as $color) {
     if (is_array($color) && !empty($color['name']) && !empty($color['image'])) {
@@ -527,8 +530,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                     }
                 ?>
                     <div class="extruder-card">
-                        <h3>Extruder <?php echo $index + 1; ?></h3>
-                        
+                        <?php if ($extruder_limit > 1): ?>
+                            <h3>Extruder <?php echo $index + 1; ?></h3>
+                        <?php endif; ?>
+
                         <div class="row">
                             <div class="field">
                                 <label>Color</label>
@@ -592,7 +597,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                                 <label>
                                     <input type="hidden" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="0">
                                     <input type="checkbox" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="1" <?php echo $saved_data['is_club'] === '1' ? 'checked' : ''; ?>>
-                                    gehört 35services e.V.
+                                    <?php echo htmlspecialchars($club_label); ?>
                                 </label>
                             </div>
 

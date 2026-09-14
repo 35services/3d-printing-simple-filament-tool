@@ -11,7 +11,7 @@ This is a management tool for a 3D printer. It requires PHP and a JSON configura
 * Modification without an authentication requirement
 * Color selection via a picker or a hex input field
 * Material dropdown using a predefined option
-* Ownership assignment via a text input or a club checkbox
+* Ownership assignment via a text input or a club checkbox with a customizable label (`club_label` in `config.json`)
 * Input validation to prevent a security exploit
 * Optional Slack notification when a filament's color changes
 

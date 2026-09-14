@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-15
+
+### Added
+- Configurable club-membership checkbox label (`club_label` in `config.json`), so the "gehört 35services e.V." text can be customized per deployment/workshop. Falls back to that same text if unset, so existing configs are unaffected.
+
+### Changed
+- The "Extruder N" heading is hidden for printers with only one extruder, since it's redundant there.
+- Updated the README screenshot to reflect the current UI.
+
 ## [0.8.0] - 2026-09-15
 
 ### Added
