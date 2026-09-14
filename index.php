@@ -1,6 +1,9 @@
 <?php
 $config_path = 'config.json';
 $state_path = 'state.json';
+$version_path = 'VERSION';
+
+$app_version = file_exists($version_path) ? trim(file_get_contents($version_path)) : 'unknown';
 
 $printer_config = [];
 if (file_exists($config_path)) {
@@ -282,6 +285,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         button[type="submit"]:hover { background: var(--accent-hover); }
 
+        .app-version {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
         @media (max-width: 600px) {
             body { padding: 1rem 0.75rem 4rem; }
             .row { gap: 0.75rem; }
@@ -394,5 +404,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endforeach; ?>
         <button type="submit">Save</button>
     </form>
+    <footer class="app-version">v<?php echo htmlspecialchars($app_version); ?></footer>
 </body>
 </html>
