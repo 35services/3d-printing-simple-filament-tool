@@ -11,6 +11,6 @@ if [ ! -f state.json ]; then
     cp state.example.json state.json
 fi
 
-chmod 666 state.json
+chmod 666 config.json state.json
 
 exec apache2-foreground

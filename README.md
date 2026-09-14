@@ -18,7 +18,7 @@ This is a management tool for a 3D printer. It requires PHP and a JSON configura
 
 ### Docker (recommended)
 1. Run `docker compose up`.
-2. On first start, `config.json` and `state.json` are created automatically from `config.example.json` and `state.example.json`, and `state.json` is made writable.
+2. On first start, `config.json` and `state.json` are created automatically from `config.example.json` and `state.example.json`, and both are made writable.
 3. Open a web browser and visit `http://localhost:81`.
 
 `config.json` and `state.json` hold your actual printer setup and filament inventory — they're gitignored, so edit them locally without worrying about committing personal data. To reset either one, delete it and restart the container.
@@ -27,6 +27,6 @@ This is a management tool for a 3D printer. It requires PHP and a JSON configura
 1. Open a terminal window.
 2. Copy `config.example.json` to `config.json` and adjust it to your printers.
 3. Copy `state.example.json` to `state.json`.
-4. Grant write access to the state file (`chmod 666 state.json`).
+4. Grant write access to both files (`chmod 666 config.json state.json`).
 5. Start a local PHP server (`php -S localhost:8000`).
 6. Open a web browser and visit `http://localhost:8000`.
