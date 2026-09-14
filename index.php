@@ -42,6 +42,60 @@ if (file_exists($state_path)) {
     }
 }
 
+$slack_path = 'slack.json';
+$slack_config = [];
+if (file_exists($slack_path)) {
+    $file_size = filesize($slack_path);
+    if ($file_size > 0) {
+        $file_handle = fopen($slack_path, 'r');
+        $slack_data = fread($file_handle, $file_size);
+        fclose($file_handle);
+        $slack_config = json_decode($slack_data, true) ?: [];
+    }
+}
+
+function notify_slack_color_changes($slack_config, $changes) {
+    if (empty($slack_config['bot_token']) || empty($slack_config['channel']) || empty($changes)) {
+        return;
+    }
+
+    $lines = array_map(function ($change) {
+        $color = $change['color_name'] !== ''
+            ? "{$change['color_name']} (`{$change['hex']}`)"
+            : "`{$change['hex']}`";
+        $location = $change['extruder_count'] > 1
+            ? "{$change['printer']} – Extruder {$change['extruder']}"
+            : $change['printer'];
+        return "• *{$location}*: {$color}";
+    }, $changes);
+
+    $text = "🎨 Filament changed:\n" . implode("\n", $lines);
+
+    $ch = curl_init('https://slack.com/api/chat.postMessage');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 5,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $slack_config['bot_token'],
+            'Content-Type: application/json; charset=utf-8',
+        ],
+        CURLOPT_POSTFIELDS => json_encode([
+            'channel' => $slack_config['channel'],
+            'text' => $text,
+        ]),
+    ]);
+    $response = curl_exec($ch);
+    if ($response === false) {
+        error_log('Slack notify failed: ' . curl_error($ch));
+    } else {
+        $result = json_decode($response, true);
+        if (!($result['ok'] ?? false)) {
+            error_log('Slack notify error: ' . ($result['error'] ?? 'unknown'));
+        }
+    }
+}
+
 $page = $_GET['page'] ?? 'home';
 $config_error = '';
 $config_saved = isset($_GET['saved']);
@@ -121,11 +175,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
         }
     }
 
+    $color_changes = [];
+    foreach ($clean_state as $printer_id => $extruder_group) {
+        foreach ($extruder_group as $index => $item) {
+            $previous = $current_state[$printer_id][$index] ?? null;
+            $is_new_default = $previous === null && $item['hex'] === '#ffffff' && $item['color_name'] === '';
+            $changed = $previous === null
+                ? !$is_new_default
+                : ($previous['hex'] !== $item['hex'] || $previous['color_name'] !== $item['color_name']);
+
+            if ($changed) {
+                $color_changes[] = [
+                    'printer' => $printer_config[$printer_id]['name'] ?? $printer_id,
+                    'extruder' => $index + 1,
+                    'extruder_count' => $printer_config[$printer_id]['extruder_count'] ?? 1,
+                    'hex' => $item['hex'],
+                    'color_name' => $item['color_name'],
+                ];
+            }
+        }
+    }
+
     $file_handle = fopen($state_path, 'w');
     if ($file_handle) {
         fwrite($file_handle, json_encode($clean_state, JSON_PRETTY_PRINT));
         fclose($file_handle);
     }
+
+    notify_slack_color_changes($slack_config, $color_changes);
+
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }

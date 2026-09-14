@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-15
+
+### Added
+- Slack notification when a filament's color changes: posts hex + color name (and printer/extruder) to a configured channel via `chat.postMessage`, using a bot token stored in a new gitignored `slack.json` (`slack.example.json` is the tracked template, auto-copied by the Docker entrypoint like `config.json`/`state.json`).
+- Notification only fires for extruders whose hex or color name actually changed compared to the previous save, and multiple changes in one save are batched into a single message.
+
 ## [0.7.0] - 2026-09-15
 
 ### Added
