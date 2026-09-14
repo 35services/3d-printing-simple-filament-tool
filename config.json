@@ -1,11 +1,15 @@
 {
     "printer_1": {
-        "name": "Prusa MK4",
+        "name": "Bambu A1 mini",
         "extruder_count": 1
     },
     "printer_2": {
-        "name": "Prusa XL",
+        "name": "Prusa MK4",
         "extruder_count": 5
+    },
+    "printer_3": {
+        "name": "Falko Mk3s",
+        "extruder_count": 1
     },
     "material_list": [
         "PLA", "PETG", "PETG HT", "Glow in the dark", "ASA", "ABS",
