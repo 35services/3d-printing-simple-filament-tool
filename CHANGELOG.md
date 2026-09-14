@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-09-15
+
+### Fixed
+- Slack's `files.completeUploadExternal` requires an actual channel ID (`C0123456789`), not a `#channel-name` — that format works for the plain text message but silently failed the image attachment (`invalid_arguments`), always falling back to text-only. `slack.example.json` and the README now document using the channel ID directly, which works for both paths.
+
+Verified with `files:write` granted: the swatch image now attaches successfully end-to-end.
+
 ## [0.11.0] - 2026-09-15
 
 ### Added

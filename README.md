@@ -37,10 +37,11 @@ Note: the stock `docker-compose.yml` uses the plain `php:apache` image, which do
 
 ### Slack notifications (optional)
 1. Create a Slack app at [api.slack.com/apps](https://api.slack.com/apps) → **From scratch**.
-2. Under **OAuth & Permissions**, add the `chat:write` scope, then **Install to Workspace** and copy the **Bot User OAuth Token** (`xoxb-...`).
+2. Under **OAuth & Permissions**, add the `chat:write` and `files:write` scopes, then **Install to Workspace** and copy the **Bot User OAuth Token** (`xoxb-...`).
 3. Invite the bot to your target channel: `/invite @YourAppName` in that channel (or add the `chat:write.public` scope instead, to skip the invite).
-4. Copy `slack.example.json` to `slack.json` and fill in `bot_token` and `channel` (e.g. `#3d-druck`).
-5. Save a filament color from the app — a message is posted to that channel listing what changed. `slack.json` is gitignored, and the feature is silently disabled if the file is missing or `bot_token`/`channel` are empty.
+4. Find the channel's ID — right-click the channel in Slack → **View channel details**, it's at the bottom of that panel (looks like `C0123456789`). Channel *names* like `#3d-druck` work for the text message but not for the image attachment, so use the ID.
+5. Copy `slack.example.json` to `slack.json` and fill in `bot_token` and `channel` (the ID from step 4).
+6. Save a filament color from the app — a message with a small color-swatch image is posted to that channel. `slack.json` is gitignored, and the feature is silently disabled if the file is missing or `bot_token`/`channel` are empty. If the image upload fails for any reason (e.g. `files:write` wasn't granted), it falls back to a plain text message so the notification is never lost.
 
 ### Signal notifications (optional, requires `signal-cli`)
 1. Install and link [`signal-cli`](https://github.com/AsamK/signal-cli) on the machine `index.php` actually runs on, so it's linked to a Signal account (`signal-cli -a +<number> ...`). Only that host can send — see the Docker note above.
