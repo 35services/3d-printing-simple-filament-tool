@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-15
+
+### Added
+- Slack notifications now attach a small 50×50 PNG swatch per changed color (generated in pure PHP, no GD dependency needed) via Slack's external file upload flow, with the message text as the attachment's caption. Falls back to the existing plain-text message if the upload fails for any reason (e.g. the bot token is missing the `files:write` scope), so notifications are never lost over an image issue.
+
+### Changed
+- Moved the Slack and Signal notification code out of `index.php` into their own `slack.php`/`signal.php` files, each self-loading its own config (`slack_load_config()`/`signal_load_config()`) and exposing a single `notify_*_color_changes($changes)` entry point. `index.php` just requires both and calls them.
+
 ## [0.10.0] - 2026-09-15
 
 ### Added
