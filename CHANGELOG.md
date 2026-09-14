@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-09-15
+
+### Changed
+- Checking the club-membership checkbox now hides and disables the Owner field, since an extruder is either individually owned or belongs to the club, not both. Unchecking restores the previously entered owner name without losing it.
+
 ## [0.9.0] - 2026-09-15
 
 ### Added

@@ -374,6 +374,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
             gap: 0.3rem;
         }
 
+        .field[hidden] {
+            display: none;
+        }
+
         .field label {
             font-size: 0.7rem;
             font-weight: 600;
@@ -596,14 +600,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                             <div class="club-field">
                                 <label>
                                     <input type="hidden" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="0">
-                                    <input type="checkbox" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="1" <?php echo $saved_data['is_club'] === '1' ? 'checked' : ''; ?>>
+                                    <input type="checkbox" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="1" <?php echo $saved_data['is_club'] === '1' ? 'checked' : ''; ?> onchange="
+                                        var ownerField = document.getElementById('ownerfield_<?php echo $block_id; ?>');
+                                        var ownerInput = document.getElementById('owner_<?php echo $block_id; ?>');
+                                        ownerField.hidden = this.checked;
+                                        ownerInput.disabled = this.checked;
+                                    ">
                                     <?php echo htmlspecialchars($club_label); ?>
                                 </label>
                             </div>
 
-                            <div class="field">
+                            <div class="field" id="ownerfield_<?php echo $block_id; ?>" <?php echo $saved_data['is_club'] === '1' ? 'hidden' : ''; ?>>
                                 <label>Owner</label>
-                                <input type="text" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][owner]" value="<?php echo htmlspecialchars($saved_data['owner']); ?>" placeholder="Owner text">
+                                <input type="text" id="owner_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][owner]" value="<?php echo htmlspecialchars($saved_data['owner']); ?>" placeholder="Owner text" <?php echo $saved_data['is_club'] === '1' ? 'disabled' : ''; ?>>
                             </div>
                         </div>
                     </div>
