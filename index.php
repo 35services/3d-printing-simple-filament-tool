@@ -16,6 +16,9 @@ if (file_exists($config_path)) {
 $material_list = $printer_config['material_list'] ?? ['PLA'];
 unset($printer_config['material_list']);
 
+$color_list = $printer_config['color_list'] ?? [];
+unset($printer_config['color_list']);
+
 $current_state = [];
 if (file_exists($state_path)) {
     $file_size = filesize($state_path);
@@ -85,14 +88,189 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Management Tool</title>
     <style>
-        body { font-family: sans-serif; padding: 1rem; }
-        .printer-card { border: 1px solid black; padding: 1rem; margin-bottom: 1rem; }
-        .extruder-card { border-left: 1px solid gray; padding-left: 1rem; margin-bottom: 1rem; }
-        .row { margin-bottom: 1rem; }
-        .row input, .row select, .row label { margin-right: 1rem; vertical-align: middle; }
+        :root {
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --extruder-bg: #f9fafb;
+            --border: #e2e4e9;
+            --border-strong: #d4d7dd;
+            --text: #1f2328;
+            --text-muted: #6b7280;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --radius: 10px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem 1rem 5rem;
+        }
+
+        form {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            max-width: 960px;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .printer-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .printer-card h2 {
+            margin: 0 0 1.25rem;
+            font-size: 1.15rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .extruder-card {
+            background: var(--extruder-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .extruder-card:last-child { margin-bottom: 0; }
+
+        .extruder-card h3 {
+            margin: 0 0 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .row:last-child { margin-bottom: 0; }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .field label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .swatch-group {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        input[type="text"],
+        input[type="color"],
+        select {
+            font: inherit;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            padding: 0.45rem 0.6rem;
+            background: #fff;
+            color: var(--text);
+        }
+
+        input[type="text"]:focus,
+        input[type="color"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        input[type="color"] {
+            padding: 0.2rem;
+            width: 2.75rem;
+            height: 2.35rem;
+            cursor: pointer;
+        }
+
+        input[name$="[hex]"] { width: 6.5rem; }
+        input[placeholder^="Color Name"] { width: 13rem; }
+        input[placeholder="Owner text"] { width: 12rem; }
+
+        .club-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            justify-content: flex-end;
+        }
+
+        .club-field label {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.9rem;
+            color: var(--text);
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: normal;
+            white-space: nowrap;
+            padding-bottom: 0.5rem;
+        }
+
+        input[type="checkbox"] {
+            width: 1.05rem;
+            height: 1.05rem;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        button[type="submit"] {
+            display: block;
+            margin: 0 auto;
+            font: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #fff;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            padding: 0.7rem 2.5rem;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1);
+        }
+
+        button[type="submit"]:hover { background: var(--accent-hover); }
+
+        @media (max-width: 600px) {
+            body { padding: 1rem 0.75rem 4rem; }
+            .row { gap: 0.75rem; }
+            input[placeholder^="Color Name"],
+            input[placeholder="Owner text"] { width: 100%; }
+        }
     </style>
 </head>
 <body>
+    <h1>Filament Management</h1>
     <form method="POST">
         <?php foreach ($printer_config as $machine_id => $machine_data): ?>
             <div class="printer-card">
@@ -113,27 +291,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <h3>Extruder <?php echo $index + 1; ?></h3>
                         
                         <div class="row">
-                            <input type="color" id="pick_<?php echo $block_id; ?>" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('txt_<?php echo $block_id; ?>').value = this.value">
-                            <input type="text" id="txt_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][hex]" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('pick_<?php echo $block_id; ?>').value = this.value">
-                            
-                            <input type="text" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][color_name]" value="<?php echo htmlspecialchars($saved_data['color_name']); ?>" placeholder="Color Name">
-                            
-                            <select name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][material]">
-                                <?php foreach ($material_list as $mat): ?>
-                                    <option value="<?php echo htmlspecialchars($mat); ?>" <?php echo $saved_data['material'] === $mat ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($mat); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <div class="field">
+                                <label>Color</label>
+                                <div class="swatch-group">
+                                    <input type="color" id="pick_<?php echo $block_id; ?>" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('txt_<?php echo $block_id; ?>').value = this.value">
+                                    <input type="text" id="txt_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][hex]" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('pick_<?php echo $block_id; ?>').value = this.value">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Color name</label>
+                                <select onchange="if (this.value) { document.getElementById('colorname_<?php echo $block_id; ?>').value = this.value; }">
+                                    <option value="">-- Choose color --</option>
+                                    <?php foreach ($color_list as $color): ?>
+                                        <option value="<?php echo htmlspecialchars($color); ?>" <?php echo $saved_data['color_name'] === $color ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($color); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label>&nbsp;</label>
+                                <input type="text" id="colorname_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][color_name]" value="<?php echo htmlspecialchars($saved_data['color_name']); ?>" placeholder="Color Name (or pick above)">
+                            </div>
+
+                            <div class="field">
+                                <label>Material</label>
+                                <select name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][material]">
+                                    <?php foreach ($material_list as $mat): ?>
+                                        <option value="<?php echo htmlspecialchars($mat); ?>" <?php echo $saved_data['material'] === $mat ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($mat); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
-                        
+
                         <div class="row">
-                            <label>
-                                <input type="hidden" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="0">
-                                <input type="checkbox" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="1" <?php echo $saved_data['is_club'] === '1' ? 'checked' : ''; ?>>
-                                gehört 35services e.V.
-                            </label>
-                            <input type="text" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][owner]" value="<?php echo htmlspecialchars($saved_data['owner']); ?>" placeholder="Owner text">
+                            <div class="club-field">
+                                <label>
+                                    <input type="hidden" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="0">
+                                    <input type="checkbox" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="1" <?php echo $saved_data['is_club'] === '1' ? 'checked' : ''; ?>>
+                                    gehört 35services e.V.
+                                </label>
+                            </div>
+
+                            <div class="field">
+                                <label>Owner</label>
+                                <input type="text" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][owner]" value="<?php echo htmlspecialchars($saved_data['owner']); ?>" placeholder="Owner text">
+                            </div>
                         </div>
                     </div>
                 <?php endfor; ?>
