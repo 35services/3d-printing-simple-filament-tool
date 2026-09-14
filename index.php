@@ -19,6 +19,13 @@ unset($printer_config['material_list']);
 $color_list = $printer_config['color_list'] ?? [];
 unset($printer_config['color_list']);
 
+$color_images_by_name = [];
+foreach ($color_list as $color) {
+    if (is_array($color) && !empty($color['name']) && !empty($color['image'])) {
+        $color_images_by_name[$color['name']] = $color['image'];
+    }
+}
+
 $current_state = [];
 if (file_exists($state_path)) {
     $file_size = filesize($state_path);
@@ -42,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $clean_item = [
                         'hex' => '#ffffff',
                         'color_name' => '',
+                        'image' => '',
                         'material' => 'PLA',
                         'owner' => '',
                         'is_club' => '0'
@@ -53,6 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if (isset($item['color_name'])) {
                         $clean_item['color_name'] = htmlspecialchars($item['color_name'], ENT_QUOTES, 'UTF-8');
+                    }
+
+                    if (isset($item['image']) && preg_match('#^https://#', $item['image'])) {
+                        $clean_item['image'] = htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8');
                     }
 
                     if (isset($item['material']) && in_array($item['material'], $material_list)) {
@@ -213,6 +225,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
         }
 
+        .color-thumb {
+            width: 3.5rem;
+            height: 2.35rem;
+            object-fit: contain;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            background: #fff;
+        }
+
         input[name$="[hex]"] { width: 6.5rem; }
         input[placeholder^="Color Name"] { width: 13rem; }
         input[placeholder="Owner text"] { width: 12rem; }
@@ -282,10 +303,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $saved_data = $current_state[$machine_id][$index] ?? [
                         'hex' => '#ffffff',
                         'color_name' => '',
+                        'image' => '',
                         'material' => 'PLA',
                         'owner' => '',
                         'is_club' => '0'
                     ];
+                    $saved_data['image'] = $saved_data['image'] ?? '';
+                    if ($saved_data['image'] === '' && isset($color_images_by_name[$saved_data['color_name']])) {
+                        $saved_data['image'] = $color_images_by_name[$saved_data['color_name']];
+                    }
                 ?>
                     <div class="extruder-card">
                         <h3>Extruder <?php echo $index + 1; ?></h3>
@@ -296,16 +322,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="swatch-group">
                                     <input type="color" id="pick_<?php echo $block_id; ?>" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('txt_<?php echo $block_id; ?>').value = this.value">
                                     <input type="text" id="txt_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][hex]" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('pick_<?php echo $block_id; ?>').value = this.value">
+                                    <img id="thumb_<?php echo $block_id; ?>" class="color-thumb" src="<?php echo htmlspecialchars($saved_data['image']); ?>" alt="" <?php echo $saved_data['image'] === '' ? 'hidden' : ''; ?>>
                                 </div>
                             </div>
 
                             <div class="field">
                                 <label>Color name</label>
-                                <select onchange="if (this.value) { document.getElementById('colorname_<?php echo $block_id; ?>').value = this.value; }">
+                                <select onchange="
+                                    if (!this.value) { return; }
+                                    document.getElementById('colorname_<?php echo $block_id; ?>').value = this.value;
+                                    var opt = this.options[this.selectedIndex];
+                                    var hex = opt.dataset.hex;
+                                    if (hex) {
+                                        document.getElementById('txt_<?php echo $block_id; ?>').value = hex;
+                                        document.getElementById('pick_<?php echo $block_id; ?>').value = hex;
+                                    }
+                                    var image = opt.dataset.image || '';
+                                    var thumb = document.getElementById('thumb_<?php echo $block_id; ?>');
+                                    document.getElementById('colorimage_<?php echo $block_id; ?>').value = image;
+                                    thumb.src = image;
+                                    thumb.hidden = !image;
+                                ">
                                     <option value="">-- Choose color --</option>
-                                    <?php foreach ($color_list as $color): ?>
-                                        <option value="<?php echo htmlspecialchars($color); ?>" <?php echo $saved_data['color_name'] === $color ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($color); ?>
+                                    <?php foreach ($color_list as $color):
+                                        $color_name = is_array($color) ? ($color['name'] ?? '') : $color;
+                                        $color_hex = is_array($color) ? ($color['hex'] ?? '') : '';
+                                        $color_image = is_array($color) ? ($color['image'] ?? '') : '';
+                                    ?>
+                                        <option value="<?php echo htmlspecialchars($color_name); ?>" data-hex="<?php echo htmlspecialchars($color_hex); ?>" data-image="<?php echo htmlspecialchars($color_image); ?>" <?php echo $saved_data['color_name'] === $color_name ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($color_name); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -314,6 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="field">
                                 <label>&nbsp;</label>
                                 <input type="text" id="colorname_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][color_name]" value="<?php echo htmlspecialchars($saved_data['color_name']); ?>" placeholder="Color Name (or pick above)">
+                                <input type="hidden" id="colorimage_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][image]" value="<?php echo htmlspecialchars($saved_data['image']); ?>">
                             </div>
 
                             <div class="field">

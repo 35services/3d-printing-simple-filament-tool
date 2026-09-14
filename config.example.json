@@ -8,71 +8,299 @@
         "extruder_count": 5
     },
     "material_list": [
-        "PLA", "PETG", "PETG HT", "Glow in the dark", "ASA", "ABS",
-        "PC (Polycarbonate)", "CPE", "PVA / BVOH", "HIPS",
-        "PP (Polypropylene)", "Flex", "nGen", "PA (Nylon)"
+        "PLA",
+        "PETG",
+        "PETG HT",
+        "Glow in the dark",
+        "ASA",
+        "ABS",
+        "PC (Polycarbonate)",
+        "CPE",
+        "PVA / BVOH",
+        "HIPS",
+        "PP (Polypropylene)",
+        "Flex",
+        "nGen",
+        "PA (Nylon)"
     ],
     "color_list": [
-        "Gute Nacht (Schwarz)",
-        "Flauschiges Schaf (Weiß)",
-        "Cremiger Kaffee (Beige)",
-        "Püriertes Einhorn (Multicolor)",
-        "Süße Kirsche (Rot)",
-        "Flaches Gewässer (Blau)",
-        "Milder Sanddorn (Orange)",
-        "Dunkler Efeu",
-        "Nasser Elefant (Grau)",
-        "Flüssiger Asphalt (Dunkelgrau)",
-        "Fallendes Laub (Braun)",
-        "Frische Wiese (Hellgrün)",
-        "Seichte Brise (Hellblau)",
-        "Milchiges Glas (Transparent)",
-        "Kühlende Zitrone (Gelb)",
-        "Gepresste Limette (Hellgrün)",
-        "Sanfte Blüte (Rosa)",
-        "Funkelnde Nacht (Schwarz-Glitzer)",
-        "Tiefer Ozean (Dunkelblau)",
-        "Funkelnde Kerze (Rot-Glitzer)",
-        "Kluge Maus (Hellgrau)",
-        "Galaktischer Nebel (Blau-Glitzer)",
-        "Beruhigender Lavendel (Violett)",
-        "Flüssiges Glück (Gold)",
-        "Funkelnde Tanne (Grün-Glitzer)",
-        "Gammlige Avocado (Grün)",
-        "Verborgene Lagune (Blau)",
-        "Mango Yellow",
-        "Prusa Orange",
-        "Jet Black",
-        "Urban Grey",
-        "Neon Green",
-        "Carmine Red",
-        "Ultramarine Blue",
-        "Yellow Gold",
-        "Galaxy Black",
-        "Clear",
-        "Signal White",
-        "Pistachio Green",
-        "Terracotta Light",
-        "Chalky Blue",
-        "Anthracite Grey",
-        "Ocean Blue",
-        "Jungle Green",
-        "Lipstick Red",
-        "Orange Transparent",
-        "Matte Black",
-        "Prusa Orange 2kg",
-        "Jet Black 2kg",
-        "Urban Grey 2kg",
-        "Signal White 2kg",
-        "Clear 2kg",
-        "Anthracite Grey 2kg",
-        "Prusa Pro Green",
-        "Shimmering Violet",
-        "Sky Blue",
-        "Electric Green",
-        "Emerald Green",
-        "Galaxy Black 2kg",
-        "Noctua Beige",
-        "Noctua Brown"
+        {
+            "name": "Gute Nacht (Schwarz)",
+            "hex": "#000000"
+        },
+        {
+            "name": "Flauschiges Schaf (Weiß)",
+            "hex": "#ffffff"
+        },
+        {
+            "name": "Cremiger Kaffee (Beige)",
+            "hex": "#c4ad94"
+        },
+        {
+            "name": "Püriertes Einhorn (Multicolor)",
+            "hex": "#dda0dd"
+        },
+        {
+            "name": "Süße Kirsche (Rot)",
+            "hex": "#c5555c"
+        },
+        {
+            "name": "Flaches Gewässer (Blau)",
+            "hex": "#87ceeb"
+        },
+        {
+            "name": "Milder Sanddorn (Orange)",
+            "hex": "#ffa500"
+        },
+        {
+            "name": "Dunkler Efeu",
+            "hex": "#2f4f4f"
+        },
+        {
+            "name": "Nasser Elefant (Grau)",
+            "hex": "#808080"
+        },
+        {
+            "name": "Flüssiger Asphalt (Dunkelgrau)",
+            "hex": "#696969"
+        },
+        {
+            "name": "Fallendes Laub (Braun)",
+            "hex": "#654f44"
+        },
+        {
+            "name": "Frische Wiese (Hellgrün)",
+            "hex": "#90ee90"
+        },
+        {
+            "name": "Seichte Brise (Hellblau)",
+            "hex": "#add8e6"
+        },
+        {
+            "name": "Milchiges Glas (Transparent)",
+            "hex": "#f5f5f5"
+        },
+        {
+            "name": "Kühlende Zitrone (Gelb)",
+            "hex": "#ffff00"
+        },
+        {
+            "name": "Gepresste Limette (Hellgrün)",
+            "hex": "#32cd32"
+        },
+        {
+            "name": "Sanfte Blüte (Rosa)",
+            "hex": "#ffc0cb"
+        },
+        {
+            "name": "Funkelnde Nacht (Schwarz-Glitzer)",
+            "hex": "#191970"
+        },
+        {
+            "name": "Tiefer Ozean (Dunkelblau)",
+            "hex": "#00008b"
+        },
+        {
+            "name": "Funkelnde Kerze (Rot-Glitzer)",
+            "hex": "#8d6265"
+        },
+        {
+            "name": "Kluge Maus (Hellgrau)",
+            "hex": "#d3d3d3"
+        },
+        {
+            "name": "Galaktischer Nebel (Blau-Glitzer)",
+            "hex": "#4169e1"
+        },
+        {
+            "name": "Beruhigender Lavendel (Violett)",
+            "hex": "#e6e6fa"
+        },
+        {
+            "name": "Flüssiges Glück (Gold)",
+            "hex": "#ffd700"
+        },
+        {
+            "name": "Funkelnde Tanne (Grün-Glitzer)",
+            "hex": "#006400"
+        },
+        {
+            "name": "Gammlige Avocado (Grün)",
+            "hex": "#556b2f"
+        },
+        {
+            "name": "Verborgene Lagune (Blau)",
+            "hex": "#008080"
+        },
+        {
+            "name": "Mango Yellow",
+            "hex": "#e0b744",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2445.png"
+        },
+        {
+            "name": "Prusa Orange",
+            "hex": "#e35317",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2467.png"
+        },
+        {
+            "name": "Jet Black",
+            "hex": "#282827",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2439.png"
+        },
+        {
+            "name": "Urban Grey",
+            "hex": "#888888",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2430.png"
+        },
+        {
+            "name": "Neon Green",
+            "hex": "#40832b",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2438.png"
+        },
+        {
+            "name": "Carmine Red",
+            "hex": "#953332",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2428.png"
+        },
+        {
+            "name": "Ultramarine Blue",
+            "hex": "#17194d",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2429.png"
+        },
+        {
+            "name": "Yellow Gold",
+            "hex": "#a1904b",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2440.png"
+        },
+        {
+            "name": "Galaxy Black",
+            "hex": "#3c3c3c",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2417.png"
+        },
+        {
+            "name": "Clear",
+            "hex": "#c4c4c4",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2441.png"
+        },
+        {
+            "name": "Signal White",
+            "hex": "#eeeeee",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2442.png"
+        },
+        {
+            "name": "Pistachio Green",
+            "hex": "#829972",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2444.png"
+        },
+        {
+            "name": "Terracotta Light",
+            "hex": "#ce815d",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2432.png"
+        },
+        {
+            "name": "Chalky Blue",
+            "hex": "#5b82a0",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2443.png"
+        },
+        {
+            "name": "Anthracite Grey",
+            "hex": "#34383b",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2410.png"
+        },
+        {
+            "name": "Ocean Blue",
+            "hex": "#2c565c",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2431.png"
+        },
+        {
+            "name": "Jungle Green",
+            "hex": "#257e4b",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2423.png"
+        },
+        {
+            "name": "Lipstick Red",
+            "hex": "#d5362c",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2426.png"
+        },
+        {
+            "name": "Orange Transparent",
+            "hex": "#c17241",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/3319.png"
+        },
+        {
+            "name": "Matte Black",
+            "hex": "#404244",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/4909.png"
+        },
+        {
+            "name": "Prusa Orange 2kg",
+            "hex": "#e8742a",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/5385.png"
+        },
+        {
+            "name": "Jet Black 2kg",
+            "hex": "#1b1a1a",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/5386.png"
+        },
+        {
+            "name": "Urban Grey 2kg",
+            "hex": "#8d8d8d",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/9d97479f-7ded-47d4-8322-1d1cd1d5419c.png"
+        },
+        {
+            "name": "Signal White 2kg",
+            "hex": "#eeeeee",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2c111714-4c67-4dc3-ae6a-9a860a415502.png"
+        },
+        {
+            "name": "Clear 2kg",
+            "hex": "#ececec",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/0a83fdfd-6370-43ff-b08a-7ead5ff3e7c9.png"
+        },
+        {
+            "name": "Anthracite Grey 2kg",
+            "hex": "#3d474c",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/e09b930e-0aff-4d60-9abd-54b6929bc2e4.png"
+        },
+        {
+            "name": "Prusa Pro Green",
+            "hex": "#17e7b6",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/4fb83b0a-52e5-4e00-b4d8-4aebb18beb83.png"
+        },
+        {
+            "name": "Shimmering Violet",
+            "hex": "#3b4050",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/1a52e2f3-5115-4462-bad0-d770b714ceee.png"
+        },
+        {
+            "name": "Sky Blue",
+            "hex": "#036bbd",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/5294a45d-449e-4d4f-9747-e60d8aab1415.png"
+        },
+        {
+            "name": "Electric Green",
+            "hex": "#7eba95",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/f0f59235-8fdc-47a1-bf47-95cc26b6b09a.png"
+        },
+        {
+            "name": "Emerald Green",
+            "hex": "#1f5c46",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/29ea6152-eb76-4354-8f8a-a36ec09740b7.png"
+        },
+        {
+            "name": "Galaxy Black 2kg",
+            "hex": "#454545",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/5399.png"
+        },
+        {
+            "name": "Noctua Beige",
+            "hex": "#c6b097",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/974a8daf-01a0-4501-9f4b-415c34954a92.png"
+        },
+        {
+            "name": "Noctua Brown",
+            "hex": "#603529",
+            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/ee039ebf-ccee-49a7-aee9-8a10c6fc16af.png"
+        }
     ]
 }
