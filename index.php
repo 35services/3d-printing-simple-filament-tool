@@ -99,6 +99,47 @@ function notify_slack_color_changes($slack_config, $changes) {
     }
 }
 
+$signal_path = 'signal.json';
+$signal_config = [];
+if (file_exists($signal_path)) {
+    $file_size = filesize($signal_path);
+    if ($file_size > 0) {
+        $file_handle = fopen($signal_path, 'r');
+        $signal_data = fread($file_handle, $file_size);
+        fclose($file_handle);
+        $signal_config = json_decode($signal_data, true) ?: [];
+    }
+}
+
+function notify_signal_color_changes($signal_config, $changes) {
+    if (empty($signal_config['account']) || empty($signal_config['group_id']) || empty($changes)) {
+        return;
+    }
+
+    $lines = array_map(function ($change) {
+        $color = $change['color_name'] !== ''
+            ? "{$change['color_name']} ({$change['hex']})"
+            : $change['hex'];
+        $location = $change['extruder_count'] > 1
+            ? "{$change['printer']} – Extruder {$change['extruder']}"
+            : $change['printer'];
+        return "- {$location}: {$color}";
+    }, $changes);
+
+    $text = "Filament changed:\n" . implode("\n", $lines);
+    $cli_path = $signal_config['cli_path'] ?? 'signal-cli';
+
+    $command = escapeshellarg($cli_path)
+        . ' -a ' . escapeshellarg($signal_config['account'])
+        . ' send -g ' . escapeshellarg($signal_config['group_id'])
+        . ' -m ' . escapeshellarg($text) . ' 2>&1';
+
+    exec($command, $output, $exit_code);
+    if ($exit_code !== 0) {
+        error_log('signal-cli notify failed (exit ' . $exit_code . '): ' . implode(' | ', $output));
+    }
+}
+
 $page = $_GET['page'] ?? 'home';
 $config_error = '';
 $config_saved = isset($_GET['saved']);
@@ -206,6 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
     }
 
     notify_slack_color_changes($slack_config, $color_changes);
+    notify_signal_color_changes($signal_config, $color_changes);
 
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;

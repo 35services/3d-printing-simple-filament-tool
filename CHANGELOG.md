@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.9.1] - 2026-09-15
+## [0.10.0] - 2026-09-15
+
+### Added
+- Signal notification when a filament's color changes, sent to a group via a locally installed `signal-cli` (`signal-cli -a <account> send -g <group_id> -m ...`). Reuses the same batched, change-only detection already built for Slack. Credentials live in a new gitignored `signal.json` (`signal.example.json` is the tracked template), auto-copied by the Docker entrypoint. Silently disabled if the file is missing, `account`/`group_id` are empty, or the `signal-cli` binary can't be found/run — in practice this means it only activates on hosts that actually have `signal-cli` installed and linked.
+
+Verified against a real linked account and group.
 
 ### Changed
 - Checking the club-membership checkbox now hides and disables the Owner field, since an extruder is either individually owned or belongs to the club, not both. Unchecking restores the previously entered owner name without losing it.

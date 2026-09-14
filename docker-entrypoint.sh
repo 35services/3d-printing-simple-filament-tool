@@ -15,6 +15,10 @@ if [ ! -f slack.json ]; then
     cp slack.example.json slack.json
 fi
 
+if [ ! -f signal.json ]; then
+    cp signal.example.json signal.json
+fi
+
 chmod 666 config.json state.json
 
 exec apache2-foreground
