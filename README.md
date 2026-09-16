@@ -55,14 +55,18 @@ This is a management tool for a 3D printer. It requires PHP and a JSON configura
 3. Copy `signal.example.json` to `signal.json` and fill in `account` (the linked number) and `group_id`. `cli_path` defaults to `"signal-cli --config /var/www/html/signal-state"`, matching where step 1 linked to — for the manual (non-Docker) path, `"signal-cli"` alone is enough if the default `~/.local/share/signal-cli` location already has a linked account.
 4. Save a filament color from the app — a message listing what changed is sent to that group. `signal.json` is gitignored, and the feature is silently disabled if the file is missing, `account`/`group_id` are empty, or `cli_path` can't be found/run.
 
-Every attempt (sent or skipped) is logged to `signal.log` next to `index.php` — `tail -f signal.log` while saving a color to see the exact command that ran, its exit code, and its output.
+Every attempt (sent or skipped) is logged to `signal.log` next to `index.php` — `tail -f signal.log` while saving a color to see the exact command that ran, its exit code, and its output. If nothing gets logged at all when you expect it to, the color you saved likely matches what was already stored (no change detected, so nothing to notify) rather than a `signal-cli` problem.
 
 `cli_path` is used as a raw command prefix rather than a single binary path, so it can be any whole command line, not just `signal-cli` directly. Since this only comes from your own local `signal.json`, not from the web UI, it's trusted the same way the rest of that file is.
+
+**A syntax error in `signal.json` fails silently** — invalid JSON makes it load as if the file were empty, and the feature just quietly does nothing (same as a missing file), with no error anywhere. If `signal.log` shows nothing at all after a real color change, double-check `signal.json` is valid JSON (`docker compose exec app php -r 'var_dump(json_decode(file_get_contents("/var/www/html/signal.json")));'` — `NULL` means invalid) before assuming `signal-cli` itself is the problem.
 
 #### Why signal-cli is baked into the app's own image
 It has to live in the same container as the app: PHP's `exec()` runs *inside* the app container, which has no `docker` CLI and no access to the host's Docker daemon, so an earlier `cli_path` of `docker run ... signal-image ...` silently couldn't work once the app itself moved into Docker on a real host — it only ever ran fine in local testing here because that testing invoked PHP directly on the host, not through the containerized app.
 
 `signal-cli` also needs a JRE far newer than Debian (the app's base image) ships, and its official release only bundles the native `libsignal-client` library for `amd64` Linux — not `arm64`, which is what a 64-bit Raspberry Pi runs. `Dockerfile` handles both: a build stage copies a matching JRE from `eclipse-temurin:25-jre`, and for non-`amd64` architectures it downloads a matching prebuilt native lib from [exquo/signal-libs-build](https://github.com/exquo/signal-libs-build) (`arm64`/`armhf` are handled; anything else fails the build with a clear error). If you bump `SIGNAL_CLI_VERSION`, also update `LIBSIGNAL_VERSION` to match — check the `libsignal-client-<version>.jar` filename in that release's `lib/` directory.
+
+`Dockerfile` also sets `LANG=C.UTF-8`. Without a locale, Java decodes `exec()`'d command-line arguments as ASCII (`sun.jnu.encoding`), turning every non-ASCII byte into `�` — so color/printer names with accents, umlauts, or an em dash would arrive at Signal mangled (`Grün` → `Gr��n`) even though everything upstream (PHP, the message text) was correct UTF-8 the whole way.
 
 #### Standalone signal-cli image (optional)
 `Dockerfile.signal-cli`/`signal-cli-docker.sh` build a separate `signal-image`, useful for testing `signal-cli` on its own without the full app stack running. Not needed for normal operation — the app's own image already has everything it needs.

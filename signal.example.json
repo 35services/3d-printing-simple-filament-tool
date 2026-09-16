@@ -1,5 +1,5 @@
 {
     "account": "+10000000000",
     "group_id": "your-group-id-base64==",
-    "cli_path": "signal-cli"
+    "cli_path": "signal-cli --config /var/www/html/signal-state"
 }

@@ -10,6 +10,11 @@ ENV SIGNAL_CLI_VERSION=0.14.8
 ENV LIBSIGNAL_VERSION=0.102.1
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
+# Without a UTF-8 locale, Java decodes exec()'d command-line arguments (sun.jnu.encoding)
+# as ASCII, replacing every non-ASCII byte with U+FFFD — mangling color/printer names
+# with accents or dashes before signal-cli ever sees them. C.UTF-8 needs no locale-gen.
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 COPY --from=java /opt/java/openjdk /opt/java/openjdk
 

@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.14.1] - 2026-09-17
+## [0.14.2] - 2026-09-17
+
+### Fixed
+- Non-ASCII characters (umlauts, em dashes, etc.) in Signal messages came out as `�`. Without a locale, Java decodes `exec()`'d command-line arguments as ASCII (`sun.jnu.encoding`), mangling any multi-byte UTF-8 sequence before `signal-cli` ever saw it — everything upstream (PHP, the message text itself) was already correct UTF-8. `Dockerfile` now sets `LANG=C.UTF-8`/`LC_ALL=C.UTF-8` (needs no `locale-gen`). Verified `sun.jnu.encoding` reports `UTF-8` in the rebuilt image, where it previously reported `ANSI_X3.4-1968`.
+- `signal.example.json`'s `cli_path` now defaults to `"signal-cli --config /var/www/html/signal-state"`, matching the Docker setup documented in the README, instead of a bare `"signal-cli"` that would fail with "Failed to read local accounts list" against the baked-in image's default (empty) location.
+
+### Added
+- README troubleshooting notes for two silent-failure modes hit during setup: a `signal.json` syntax error loads as if the file were empty (feature just does nothing, no error) — added a one-line `php -r` check to tell malformed JSON apart from `signal-cli` actually failing — and a `cli_path` missing the `--config` flag, which fails loudly with "Failed to read local accounts list" once the JSON itself is valid.
 
 ### Fixed
 - `signal-state`'s files end up owner-only (`0700`/`0600`), since linking runs as root inside the container — but the actual save request is handled by Apache's `www-data` worker, not root. `docker-entrypoint.sh` now `chmod -R a+rwX`s `signal-state` on every container start. This was masked in local testing on Docker Desktop for Mac, which doesn't enforce bind-mount permission bits the same way a native Linux Docker Engine (e.g. on the Pi) does — verified the fix directly by reproducing the restrictive permissions on a throwaway directory and confirming the chmod resolves them.
