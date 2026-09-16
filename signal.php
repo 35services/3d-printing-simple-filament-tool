@@ -15,9 +15,11 @@ function signal_load_config() {
     return json_decode($data, true) ?: [];
 }
 
-function notify_signal_color_changes($changes) {
+function notify_signal_color_changes($changes, $group_id_override = null) {
     $signal_config = signal_load_config();
-    if (empty($signal_config['account']) || empty($signal_config['group_id']) || empty($changes)) {
+    $group_id = $group_id_override ?? ($signal_config['group_id'] ?? null);
+
+    if (empty($signal_config['account']) || empty($group_id) || empty($changes)) {
         return;
     }
 
@@ -36,7 +38,7 @@ function notify_signal_color_changes($changes) {
 
     $command = escapeshellarg($cli_path)
         . ' -a ' . escapeshellarg($signal_config['account'])
-        . ' send -g ' . escapeshellarg($signal_config['group_id'])
+        . ' send -g ' . escapeshellarg($group_id)
         . ' -m ' . escapeshellarg($text) . ' 2>&1';
 
     exec($command, $output, $exit_code);

@@ -48,3 +48,20 @@ Note: the stock `docker-compose.yml` uses the plain `php:apache` image, which do
 2. Find your target group's id with `signal-cli -a +<number> listGroups` — copy the `Id:` value (base64, e.g. `oT+8X2/...`).
 3. Copy `signal.example.json` to `signal.json` and fill in `account` (the linked number, e.g. `+491701234567`), `group_id`, and optionally `cli_path` if `signal-cli` isn't on `PATH`.
 4. Save a filament color from the app — a message listing what changed is sent to that group via `signal-cli send`. `signal.json` is gitignored, and the feature is silently disabled if the file is missing, `account`/`group_id` are empty, or the `signal-cli` binary can't be found/run.
+
+### Per-printer notification overrides
+Each printer entry in `config.json` can add `slack` and/or `signal_channel` to override the defaults from `slack.json`/`signal.json` for just that printer:
+
+```json
+"printer_2": {
+    "name": "Example Printer 2",
+    "extruder_count": 5,
+    "slack": false,
+    "signal_channel": "another-group-id-base64=="
+}
+```
+
+* `slack`: set to `false` to skip Slack notifications for that printer's color changes. Omit (or `true`) to use the default (notify).
+* `signal_channel`: set to a different Signal group id to route that printer's notifications there instead of `signal.json`'s `group_id`, or `false` to skip Signal notifications for that printer entirely. Omit to use the default group.
+
+A save that changes colors on printers with different `signal_channel`s sends one batched Signal message per destination group.

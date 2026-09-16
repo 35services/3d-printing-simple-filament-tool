@@ -137,12 +137,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                 : ($previous['hex'] !== $item['hex'] || $previous['color_name'] !== $item['color_name']);
 
             if ($changed) {
+                $printer_meta = $printer_config[$printer_id] ?? [];
+                $signal_channel = $printer_meta['signal_channel'] ?? null;
+
                 $color_changes[] = [
-                    'printer' => $printer_config[$printer_id]['name'] ?? $printer_id,
+                    'printer' => $printer_meta['name'] ?? $printer_id,
                     'extruder' => $index + 1,
-                    'extruder_count' => $printer_config[$printer_id]['extruder_count'] ?? 1,
+                    'extruder_count' => $printer_meta['extruder_count'] ?? 1,
                     'hex' => $item['hex'],
                     'color_name' => $item['color_name'],
+                    'slack_enabled' => ($printer_meta['slack'] ?? true) !== false,
+                    'signal_channel' => $signal_channel === '' ? null : $signal_channel,
                 ];
             }
         }
@@ -154,8 +159,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
         fclose($file_handle);
     }
 
-    notify_slack_color_changes($color_changes);
-    notify_signal_color_changes($color_changes);
+    $slack_changes = array_values(array_filter($color_changes, function ($change) {
+        return $change['slack_enabled'];
+    }));
+    notify_slack_color_changes($slack_changes);
+
+    $signal_groups = [];
+    foreach ($color_changes as $change) {
+        if ($change['signal_channel'] === false) {
+            continue;
+        }
+        $key = $change['signal_channel'] ?? '';
+        $signal_groups[$key][] = $change;
+    }
+    foreach ($signal_groups as $group_id => $changes) {
+        notify_signal_color_changes($changes, $group_id === '' ? null : $group_id);
+    }
 
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;

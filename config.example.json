@@ -5,7 +5,9 @@
     },
     "printer_2": {
         "name": "Example Printer 2",
-        "extruder_count": 5
+        "extruder_count": 5,
+        "slack": false,
+        "signal_channel": "another-group-id-base64=="
     },
     "club_label": "belongs to Example Makerspace e.V.",
     "material_list": [

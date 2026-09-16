@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.11.1] - 2026-09-15
+## [0.12.0] - 2026-09-16
+
+### Added
+- Per-printer notification overrides in `config.json`: `"slack": false` skips Slack notifications for that printer, and `"signal_channel"` routes that printer's Signal notifications to a different group (or `false` to skip Signal for it entirely). Omit either to keep using the defaults from `slack.json`/`signal.json`. A save touching printers with different `signal_channel`s sends one batched message per destination group.
+
+Verified all combinations (default, `slack: false`, `signal_channel: false`, `signal_channel` override) end-to-end — Slack via a real send, Signal via a mock `signal-cli` capturing each invocation's arguments to confirm correct grouping/routing without spamming real groups.
 
 ### Fixed
 - Slack's `files.completeUploadExternal` requires an actual channel ID (`C0123456789`), not a `#channel-name` — that format works for the plain text message but silently failed the image attachment (`invalid_arguments`), always falling back to text-only. `slack.example.json` and the README now document using the channel ID directly, which works for both paths.
