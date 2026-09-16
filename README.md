@@ -46,8 +46,10 @@ Note: the stock `docker-compose.yml` uses the plain `php:apache` image, which do
 ### Signal notifications (optional, requires `signal-cli`)
 1. Install and link [`signal-cli`](https://github.com/AsamK/signal-cli) on the machine `index.php` actually runs on, so it's linked to a Signal account (`signal-cli -a +<number> ...`). Only that host can send — see the Docker note above.
 2. Find your target group's id with `signal-cli -a +<number> listGroups` — copy the `Id:` value (base64, e.g. `oT+8X2/...`).
-3. Copy `signal.example.json` to `signal.json` and fill in `account` (the linked number, e.g. `+491701234567`), `group_id`, and optionally `cli_path` if `signal-cli` isn't on `PATH`.
-4. Save a filament color from the app — a message listing what changed is sent to that group via `signal-cli send`. `signal.json` is gitignored, and the feature is silently disabled if the file is missing, `account`/`group_id` are empty, or the `signal-cli` binary can't be found/run.
+3. Copy `signal.example.json` to `signal.json` and fill in `account` (the linked number, e.g. `+491701234567`) and `group_id`.
+4. Save a filament color from the app — a message listing what changed is sent to that group via `signal-cli send`. `signal.json` is gitignored, and the feature is silently disabled if the file is missing, `account`/`group_id` are empty, or `cli_path` can't be found/run.
+
+`cli_path` defaults to `signal-cli` (resolved via `PATH`), but it's used as a raw command prefix rather than a single binary path, so it can be a whole command line if `signal-cli` needs to run somewhere else — e.g. `"cli_path": "docker exec my-signal-container signal-cli"` to reach a `signal-cli` running in a separate container. Since this only comes from your own local `signal.json`, not from the web UI, it's trusted the same way the rest of that file is.
 
 ### Per-printer notification overrides
 Each printer entry in `config.json` can add `slack` and/or `signal_channel` to override the defaults from `slack.json`/`signal.json` for just that printer:

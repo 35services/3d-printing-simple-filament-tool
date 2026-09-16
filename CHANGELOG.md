@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-09-16
+
+### Changed
+- `signal.json`'s `cli_path` is now used as a raw command prefix instead of a single escaped binary path, so it can be a whole command line — e.g. `"docker exec my-signal-container signal-cli"` to reach `signal-cli` running in a separate container. Still defaults to `signal-cli` resolved via `PATH`.
+
+Verified with a mock wrapper script capturing its invocation arguments: both the plain single-word default and a multi-word `docker exec`-style prefix produce the correct command.
+
 ## [0.12.0] - 2026-09-16
 
 ### Added

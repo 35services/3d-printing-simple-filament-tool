@@ -36,7 +36,7 @@ function notify_signal_color_changes($changes, $group_id_override = null) {
     $text = "Filament changed:\n" . implode("\n", $lines);
     $cli_path = $signal_config['cli_path'] ?? 'signal-cli';
 
-    $command = escapeshellarg($cli_path)
+    $command = $cli_path
         . ' -a ' . escapeshellarg($signal_config['account'])
         . ' send -g ' . escapeshellarg($group_id)
         . ' -m ' . escapeshellarg($text) . ' 2>&1';
