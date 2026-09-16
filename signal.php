@@ -15,11 +15,17 @@ function signal_load_config() {
     return json_decode($data, true) ?: [];
 }
 
+function signal_log($message) {
+    $line = '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n";
+    file_put_contents(__DIR__ . '/signal.log', $line, FILE_APPEND | LOCK_EX);
+}
+
 function notify_signal_color_changes($changes, $group_id_override = null) {
     $signal_config = signal_load_config();
     $group_id = $group_id_override ?? ($signal_config['group_id'] ?? null);
 
     if (empty($signal_config['account']) || empty($group_id) || empty($changes)) {
+        signal_log('Skipped: ' . (empty($signal_config['account']) ? 'no account configured' : (empty($group_id) ? 'no group_id resolved' : 'no color changes to report')));
         return;
     }
 
@@ -41,7 +47,10 @@ function notify_signal_color_changes($changes, $group_id_override = null) {
         . ' send -g ' . escapeshellarg($group_id)
         . ' -m ' . escapeshellarg($text) . ' 2>&1';
 
+    signal_log('Running: ' . $command);
     exec($command, $output, $exit_code);
+    signal_log('Exit code: ' . $exit_code . (empty($output) ? '' : ' | Output: ' . implode(' | ', $output)));
+
     if ($exit_code !== 0) {
         error_log('signal-cli notify failed (exit ' . $exit_code . '): ' . implode(' | ', $output));
     }

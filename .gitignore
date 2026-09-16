@@ -4,3 +4,5 @@ config.json
 state.json
 slack.json
 signal.json
+signal.log
+signal-state/

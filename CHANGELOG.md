@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.13.1] - 2026-09-16
+## [0.13.2] - 2026-09-17
+
+### Added
+- `signal.log`, a tailable local log next to `index.php` recording every `signal-cli` attempt: the exact command run, its exit code and output, or why it was skipped (no account/group_id/changes). Makes issues like a `cli_path` volume mount silently pointing at an unlinked account diagnosable without guessing.
+
+### Fixed
+- `signal-state/` (the actual Signal account keys/session for the Docker-based `cli_path` setup) was untracked but not gitignored — a stray `git add -A` could have committed real private key material. Added `signal-state/` and `signal.log` to `.gitignore`.
 
 ### Added
 - `mock-slack-server.php`, a small fake Slack API for local testing (`chat.postMessage`, `files.getUploadURLExternal`, `files.completeUploadExternal`), so `slack.php`'s real code can be exercised without ever contacting the real Slack workspace. `slack.json` gained an optional `api_base` (defaults to `https://slack.com/api`) so a test copy can point at it.

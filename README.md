@@ -49,6 +49,8 @@ Note: the stock `docker-compose.yml` uses the plain `php:apache` image, which do
 3. Copy `signal.example.json` to `signal.json` and fill in `account` (the linked number, e.g. `+491701234567`) and `group_id`.
 4. Save a filament color from the app — a message listing what changed is sent to that group via `signal-cli send`. `signal.json` is gitignored, and the feature is silently disabled if the file is missing, `account`/`group_id` are empty, or `cli_path` can't be found/run.
 
+Every attempt (sent or skipped) is logged to `signal.log` next to `index.php` — `tail -f signal.log` while saving a color to see the exact command that ran, its exit code, and its output. Useful for diagnosing things like a wrong `cli_path` volume mount silently pointing at an unlinked account.
+
 `cli_path` defaults to `signal-cli` (resolved via `PATH`), but it's used as a raw command prefix rather than a single binary path, so it can be a whole command line if `signal-cli` needs to run somewhere else — e.g. via Docker (see below). Since this only comes from your own local `signal.json`, not from the web UI, it's trusted the same way the rest of that file is.
 
 #### Running `signal-cli` via Docker
