@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.14.0] - 2026-09-17
+## [0.14.1] - 2026-09-17
+
+### Fixed
+- `signal-state`'s files end up owner-only (`0700`/`0600`), since linking runs as root inside the container — but the actual save request is handled by Apache's `www-data` worker, not root. `docker-entrypoint.sh` now `chmod -R a+rwX`s `signal-state` on every container start. This was masked in local testing on Docker Desktop for Mac, which doesn't enforce bind-mount permission bits the same way a native Linux Docker Engine (e.g. on the Pi) does — verified the fix directly by reproducing the restrictive permissions on a throwaway directory and confirming the chmod resolves them.
 
 ### Fixed
 - `signal.json`'s `cli_path` of `docker run --rm ... signal-image` could never have worked once the app itself ran in Docker: PHP's `exec()` runs *inside* the app container, which has no `docker` CLI and no access to the host's Docker daemon. This only ever appeared to work because all testing so far invoked PHP directly on the host, not through the containerized app.

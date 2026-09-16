@@ -25,4 +25,8 @@ fi
 
 chmod 666 config.json state.json signal.log
 
+if [ -d signal-state ]; then
+    chmod -R a+rwX signal-state
+fi
+
 exec apache2-foreground
