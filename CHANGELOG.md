@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.2] - 2026-09-16
+
+### Added
+- `Dockerfile` and `signal-cli-docker.sh` to build a `signal-image` container wrapping `signal-cli`, plus README instructions for building it, linking it to a Signal account (`docker run ... signal-image link`, persisting state to `./signal-state`), and pointing `signal.json`'s `cli_path` at the same image/volume for actual sends.
+
 ## [0.12.1] - 2026-09-16
 
 ### Changed

@@ -49,7 +49,21 @@ Note: the stock `docker-compose.yml` uses the plain `php:apache` image, which do
 3. Copy `signal.example.json` to `signal.json` and fill in `account` (the linked number, e.g. `+491701234567`) and `group_id`.
 4. Save a filament color from the app — a message listing what changed is sent to that group via `signal-cli send`. `signal.json` is gitignored, and the feature is silently disabled if the file is missing, `account`/`group_id` are empty, or `cli_path` can't be found/run.
 
-`cli_path` defaults to `signal-cli` (resolved via `PATH`), but it's used as a raw command prefix rather than a single binary path, so it can be a whole command line if `signal-cli` needs to run somewhere else — e.g. `"cli_path": "docker exec my-signal-container signal-cli"` to reach a `signal-cli` running in a separate container. Since this only comes from your own local `signal.json`, not from the web UI, it's trusted the same way the rest of that file is.
+`cli_path` defaults to `signal-cli` (resolved via `PATH`), but it's used as a raw command prefix rather than a single binary path, so it can be a whole command line if `signal-cli` needs to run somewhere else — e.g. via Docker (see below). Since this only comes from your own local `signal.json`, not from the web UI, it's trusted the same way the rest of that file is.
+
+#### Running `signal-cli` via Docker
+`Dockerfile`/`signal-cli-docker.sh` build a `signal-image` image wrapping `signal-cli`. To set it up:
+1. Build it: `./signal-cli-docker.sh` (or `docker build -t signal-image .`).
+2. Link it to your Signal account, persisting the linked state to `./signal-state`:
+   ```
+   docker run -it --rm -v $(pwd)/signal-state:/root/.local/share/signal-cli signal-image link
+   ```
+   Scan the QR code it prints with the Signal app (**Linked devices → Link new device**).
+3. Point `signal.json`'s `cli_path` at the same image and volume, so sends reuse the linked account:
+   ```json
+   "cli_path": "docker run --rm -v /full/path/to/signal-state:/root/.local/share/signal-cli signal-image"
+   ```
+   (use an absolute path here, not `$(pwd)` — that would expand to PHP's own working directory, not where `signal-state` actually lives.)
 
 ### Per-printer notification overrides
 Each printer entry in `config.json` can add `slack` and/or `signal_channel` to override the defaults from `slack.json`/`signal.json` for just that printer:
