@@ -4,7 +4,12 @@ Project-specific instructions for Claude Code working in this repo.
 
 ## Testing rules (important)
 
-- **Never send real Slack messages during development or testing.** Don't call the live Slack API (`chat.postMessage`, `files.getUploadURLExternal`, etc.) against the real bot token/channel in `slack.json`, even for "just a quick check" — it posts to a real workspace channel with real people watching it. If a change needs verifying, describe what you'd test and ask the user first; let them decide whether to authorize a real send.
+- **Never send real Slack messages during development or testing.** Don't call the live Slack API (`chat.postMessage`, `files.getUploadURLExternal`, etc.) against the real bot token/channel in `slack.json`, even for "just a quick check" — it posts to a real workspace channel with real people watching it. Use `mock-slack-server.php` instead: it fakes just enough of the Slack API (`chat.postMessage`, `files.getUploadURLExternal`, the returned `upload_url`, `files.completeUploadExternal`) for `slack.php`'s real code to run against, logging every call's fields (filename, message text, channel, uploaded file size, etc.) to `mock-slack-server.log` instead of sending anything.
+  ```bash
+  php -S localhost:8999 mock-slack-server.php   # in the scratch copy
+  # then in that copy's slack.json, set "api_base": "http://localhost:8999"
+  # (any bot_token/channel value works — nothing real is contacted)
+  ```
 - **Never send real Signal messages during development or testing**, for the same reason — `signal.json`'s account is the user's real personal Signal identity, and `group_id` points at real group chats (family, community, work). Verify `signal.php`/`signal-cli` logic with a mock `signal-cli` instead:
   ```bash
   # bin/signal-cli — logs the call instead of sending

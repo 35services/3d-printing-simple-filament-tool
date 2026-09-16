@@ -38,8 +38,8 @@ function slack_solid_color_png($hex, $size = 50) {
     return "\x89PNG\r\n\x1a\n" . $chunk('IHDR', $ihdr) . $chunk('IDAT', $idat) . $chunk('IEND', '');
 }
 
-function slack_post_text($bot_token, $channel, $text) {
-    $ch = curl_init('https://slack.com/api/chat.postMessage');
+function slack_post_text($bot_token, $channel, $text, $api_base = 'https://slack.com/api') {
+    $ch = curl_init($api_base . '/chat.postMessage');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 5,
@@ -66,7 +66,7 @@ function slack_post_text($bot_token, $channel, $text) {
     return true;
 }
 
-function slack_upload_swatches($bot_token, $channel, $changes, $text) {
+function slack_upload_swatches($bot_token, $channel, $changes, $text, $api_base = 'https://slack.com/api') {
     $file_ids = [];
 
     foreach ($changes as $change) {
@@ -75,7 +75,7 @@ function slack_upload_swatches($bot_token, $channel, $changes, $text) {
             continue;
         }
 
-        $ch = curl_init('https://slack.com/api/files.getUploadURLExternal');
+        $ch = curl_init($api_base . '/files.getUploadURLExternal');
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 5,
@@ -120,7 +120,7 @@ function slack_upload_swatches($bot_token, $channel, $changes, $text) {
         return false;
     }
 
-    $ch = curl_init('https://slack.com/api/files.completeUploadExternal');
+    $ch = curl_init($api_base . '/files.completeUploadExternal');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 5,
@@ -161,9 +161,10 @@ function notify_slack_color_changes($changes) {
     }, $changes);
 
     $text = "🎨 Filament changed:\n" . implode("\n", $lines);
+    $api_base = $slack_config['api_base'] ?? 'https://slack.com/api';
 
-    $sent = slack_upload_swatches($slack_config['bot_token'], $slack_config['channel'], $changes, $text);
+    $sent = slack_upload_swatches($slack_config['bot_token'], $slack_config['channel'], $changes, $text, $api_base);
     if (!$sent) {
-        slack_post_text($slack_config['bot_token'], $slack_config['channel'], $text);
+        slack_post_text($slack_config['bot_token'], $slack_config['channel'], $text, $api_base);
     }
 }

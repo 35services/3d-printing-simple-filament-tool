@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-09-16
+
+### Added
+- `mock-slack-server.php`, a small fake Slack API for local testing (`chat.postMessage`, `files.getUploadURLExternal`, `files.completeUploadExternal`), so `slack.php`'s real code can be exercised without ever contacting the real Slack workspace. `slack.json` gained an optional `api_base` (defaults to `https://slack.com/api`) so a test copy can point at it.
+
+Verified end-to-end: pointed a scratch copy's `slack.json` at the mock server with a fake bot token, triggered a real save through the app, and confirmed the full upload flow (PNG generation → get-upload-url → upload → complete) ran correctly against the mock with zero real Slack calls.
+
 ## [0.13.0] - 2026-09-16
 
 ### Changed
