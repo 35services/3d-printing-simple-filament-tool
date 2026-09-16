@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.3] - 2026-09-16
+
+### Fixed
+- The `signal-cli` Docker image failed to run at all: `UnsupportedClassVersionError` (base image had Java 21, but signal-cli 0.14.8 requires Java 25 — bumped `eclipse-temurin:21-jre` to `25-jre`), then `Missing required native library dependency: libsignal-client` on arm64 (signal-cli's release only bundles that native lib for `amd64` Linux). The `Dockerfile` now detects the build architecture and, for `arm64`/`armhf`, downloads a matching prebuilt native lib from `exquo/signal-libs-build` into the image.
+
+Verified on this arm64 host end-to-end: built the image, ran `listGroups` and a real `send` against the actual linked account through the container, matching exactly how `signal.json`'s `cli_path` would invoke it.
+
 ## [0.12.2] - 2026-09-16
 
 ### Added

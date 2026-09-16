@@ -63,6 +63,8 @@ Note: the stock `docker-compose.yml` uses the plain `php:apache` image, which do
    ```json
    "cli_path": "docker run --rm -v /full/path/to/signal-state:/root/.local/share/signal-cli signal-image"
    ```
+
+Built and verified on both `amd64` and `arm64` (e.g. a 64-bit Raspberry Pi OS) — `signal-cli`'s official release only bundles the native `libsignal-client` library for `amd64` Linux, so the `Dockerfile` detects other architectures at build time and fetches a matching prebuilt native lib from [exquo/signal-libs-build](https://github.com/exquo/signal-libs-build) (`arm64`/`armhf` are handled; anything else fails the build with a clear error). If you bump `VERSION` to a newer `signal-cli` release, also update `LIBSIGNAL_VERSION` to match — check the `libsignal-client-<version>.jar` filename in that release's `lib/` directory.
    (use an absolute path here, not `$(pwd)` — that would expand to PHP's own working directory, not where `signal-state` actually lives.)
 
 ### Per-printer notification overrides
