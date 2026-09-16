@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.13.2] - 2026-09-17
+## [0.13.3] - 2026-09-17
+
+### Fixed
+- `signal.log` from 0.13.2 could break the save entirely: if the file wasn't writable (e.g. a fresh Docker container where it didn't exist yet with the right permissions), `file_put_contents()` raised a warning that printed into the response body before the redirect's `header()` call, causing "headers already sent" and breaking the save. `signal_log()` now suppresses that warning and falls back to PHP's error log instead of ever surfacing to the response. `docker-entrypoint.sh` also now pre-creates `signal.log` and `chmod 666`s it alongside `config.json`/`state.json`, so this shouldn't happen on a fresh container at all.
+
+Verified by deliberately making `signal.log` unwritable (`chmod 444`) and confirming the save still completes with a clean 302 redirect and no warning in the response, with the log content correctly falling back to the error log.
 
 ### Added
 - `signal.log`, a tailable local log next to `index.php` recording every `signal-cli` attempt: the exact command run, its exit code and output, or why it was skipped (no account/group_id/changes). Makes issues like a `cli_path` volume mount silently pointing at an unlinked account diagnosable without guessing.

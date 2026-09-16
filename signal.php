@@ -17,7 +17,10 @@ function signal_load_config() {
 
 function signal_log($message) {
     $line = '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n";
-    file_put_contents(__DIR__ . '/signal.log', $line, FILE_APPEND | LOCK_EX);
+    $written = @file_put_contents(__DIR__ . '/signal.log', $line, FILE_APPEND | LOCK_EX);
+    if ($written === false) {
+        error_log('signal.log: ' . $message);
+    }
 }
 
 function notify_signal_color_changes($changes, $group_id_override = null) {

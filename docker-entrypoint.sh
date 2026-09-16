@@ -19,6 +19,10 @@ if [ ! -f signal.json ]; then
     cp signal.example.json signal.json
 fi
 
-chmod 666 config.json state.json
+if [ ! -f signal.log ]; then
+    touch signal.log
+fi
+
+chmod 666 config.json state.json signal.log
 
 exec apache2-foreground
