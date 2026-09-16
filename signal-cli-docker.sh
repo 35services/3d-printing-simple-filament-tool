@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t signal-image .
+docker build -f Dockerfile.signal-cli -t signal-image .

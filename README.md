@@ -19,13 +19,13 @@ This is a management tool for a 3D printer. It requires PHP and a JSON configura
 ## Setup Instruction
 
 ### Docker (recommended)
-1. Run `docker compose up`.
+1. Run `docker compose up --build` (the `--build` matters the first time, and again any time `Dockerfile` changes — `docker-compose.yml` builds a custom image rather than pulling one).
 2. On first start, `config.json`, `state.json`, `slack.json` and `signal.json` are created automatically from their `.example.json` templates, and `config.json`/`state.json` are made writable.
 3. Open a web browser and visit `http://localhost:81`.
 
 `config.json`, `state.json`, `slack.json` and `signal.json` hold your actual printer setup, filament inventory, and notification credentials — they're gitignored, so edit them locally without worrying about committing personal data. To reset any of them, delete it and restart the container.
 
-Note: the stock `docker-compose.yml` uses the plain `php:apache` image, which does **not** include `signal-cli`. Signal notifications only work if `signal-cli` is reachable from wherever `index.php` actually runs — either running the app directly on a host that already has `signal-cli` installed and linked (e.g. a Raspberry Pi), or building a custom image that adds it. Without that, the feature just silently does nothing, same as a missing `signal.json`.
+`Dockerfile` builds on `php:apache` but also bakes in `signal-cli` (see below) — it's a normal part of the app container, not something running elsewhere, so `signal.json`'s `cli_path` can reach it directly with no extra setup.
 
 ### Manual (without Docker)
 1. Open a terminal window.
@@ -43,31 +43,29 @@ Note: the stock `docker-compose.yml` uses the plain `php:apache` image, which do
 5. Copy `slack.example.json` to `slack.json` and fill in `bot_token` and `channel` (the ID from step 4).
 6. Save a filament color from the app — a message with a small color-swatch image is posted to that channel. `slack.json` is gitignored, and the feature is silently disabled if the file is missing or `bot_token`/`channel` are empty. If the image upload fails for any reason (e.g. `files:write` wasn't granted), it falls back to a plain text message so the notification is never lost.
 
-### Signal notifications (optional, requires `signal-cli`)
-1. Install and link [`signal-cli`](https://github.com/AsamK/signal-cli) on the machine `index.php` actually runs on, so it's linked to a Signal account (`signal-cli -a +<number> ...`). Only that host can send — see the Docker note above.
-2. Find your target group's id with `signal-cli -a +<number> listGroups` — copy the `Id:` value (base64, e.g. `oT+8X2/...`).
-3. Copy `signal.example.json` to `signal.json` and fill in `account` (the linked number, e.g. `+491701234567`) and `group_id`.
-4. Save a filament color from the app — a message listing what changed is sent to that group via `signal-cli send`. `signal.json` is gitignored, and the feature is silently disabled if the file is missing, `account`/`group_id` are empty, or `cli_path` can't be found/run.
+### Signal notifications (optional)
+`signal-cli` is already part of the app's own Docker image (see `Dockerfile`) — nothing extra to install for the Docker path. For the manual (non-Docker) path, install and link [`signal-cli`](https://github.com/AsamK/signal-cli) yourself and make sure it's on `PATH`.
 
-Every attempt (sent or skipped) is logged to `signal.log` next to `index.php` — `tail -f signal.log` while saving a color to see the exact command that ran, its exit code, and its output. Useful for diagnosing things like a wrong `cli_path` volume mount silently pointing at an unlinked account.
-
-`cli_path` defaults to `signal-cli` (resolved via `PATH`), but it's used as a raw command prefix rather than a single binary path, so it can be a whole command line if `signal-cli` needs to run somewhere else — e.g. via Docker (see below). Since this only comes from your own local `signal.json`, not from the web UI, it's trusted the same way the rest of that file is.
-
-#### Running `signal-cli` via Docker
-`Dockerfile`/`signal-cli-docker.sh` build a `signal-image` image wrapping `signal-cli`. To set it up:
-1. Build it: `./signal-cli-docker.sh` (or `docker build -t signal-image .`).
-2. Link it to your Signal account, persisting the linked state to `./signal-state`:
+1. Link an account. With Docker, do this through the running app container, so the linked state ends up exactly where `signal.json` will look for it:
    ```
-   docker run -it --rm -v $(pwd)/signal-state:/root/.local/share/signal-cli signal-image link
+   docker compose exec app signal-cli --config /var/www/html/signal-state link
    ```
-   Scan the QR code it prints with the Signal app (**Linked devices → Link new device**).
-3. Point `signal.json`'s `cli_path` at the same image and volume, so sends reuse the linked account:
-   ```json
-   "cli_path": "docker run --rm -v /full/path/to/signal-state:/root/.local/share/signal-cli signal-image"
-   ```
+   Scan the QR code with the Signal app (**Linked devices → Link new device**). This persists to `./signal-state` on the host (bind-mounted, gitignored — it holds real account keys/session, never commit it).
+2. Find your target group's id: `docker compose exec app signal-cli --config /var/www/html/signal-state -a +<number> listGroups` — copy the `Id:` value (base64, e.g. `oT+8X2/...`).
+3. Copy `signal.example.json` to `signal.json` and fill in `account` (the linked number) and `group_id`. `cli_path` defaults to `"signal-cli --config /var/www/html/signal-state"`, matching where step 1 linked to — for the manual (non-Docker) path, `"signal-cli"` alone is enough if the default `~/.local/share/signal-cli` location already has a linked account.
+4. Save a filament color from the app — a message listing what changed is sent to that group. `signal.json` is gitignored, and the feature is silently disabled if the file is missing, `account`/`group_id` are empty, or `cli_path` can't be found/run.
 
-Built and verified on both `amd64` and `arm64` (e.g. a 64-bit Raspberry Pi OS) — `signal-cli`'s official release only bundles the native `libsignal-client` library for `amd64` Linux, so the `Dockerfile` detects other architectures at build time and fetches a matching prebuilt native lib from [exquo/signal-libs-build](https://github.com/exquo/signal-libs-build) (`arm64`/`armhf` are handled; anything else fails the build with a clear error). If you bump `VERSION` to a newer `signal-cli` release, also update `LIBSIGNAL_VERSION` to match — check the `libsignal-client-<version>.jar` filename in that release's `lib/` directory.
-   (use an absolute path here, not `$(pwd)` — that would expand to PHP's own working directory, not where `signal-state` actually lives.)
+Every attempt (sent or skipped) is logged to `signal.log` next to `index.php` — `tail -f signal.log` while saving a color to see the exact command that ran, its exit code, and its output.
+
+`cli_path` is used as a raw command prefix rather than a single binary path, so it can be any whole command line, not just `signal-cli` directly. Since this only comes from your own local `signal.json`, not from the web UI, it's trusted the same way the rest of that file is.
+
+#### Why signal-cli is baked into the app's own image
+It has to live in the same container as the app: PHP's `exec()` runs *inside* the app container, which has no `docker` CLI and no access to the host's Docker daemon, so an earlier `cli_path` of `docker run ... signal-image ...` silently couldn't work once the app itself moved into Docker on a real host — it only ever ran fine in local testing here because that testing invoked PHP directly on the host, not through the containerized app.
+
+`signal-cli` also needs a JRE far newer than Debian (the app's base image) ships, and its official release only bundles the native `libsignal-client` library for `amd64` Linux — not `arm64`, which is what a 64-bit Raspberry Pi runs. `Dockerfile` handles both: a build stage copies a matching JRE from `eclipse-temurin:25-jre`, and for non-`amd64` architectures it downloads a matching prebuilt native lib from [exquo/signal-libs-build](https://github.com/exquo/signal-libs-build) (`arm64`/`armhf` are handled; anything else fails the build with a clear error). If you bump `SIGNAL_CLI_VERSION`, also update `LIBSIGNAL_VERSION` to match — check the `libsignal-client-<version>.jar` filename in that release's `lib/` directory.
+
+#### Standalone signal-cli image (optional)
+`Dockerfile.signal-cli`/`signal-cli-docker.sh` build a separate `signal-image`, useful for testing `signal-cli` on its own without the full app stack running. Not needed for normal operation — the app's own image already has everything it needs.
 
 ### Per-printer notification overrides
 Each printer entry in `config.json` can add `slack`, `signal`, and/or `signal_channel` to override the defaults from `slack.json`/`signal.json` for just that printer:

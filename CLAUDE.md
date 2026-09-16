@@ -31,6 +31,7 @@ Project-specific instructions for Claude Code working in this repo.
 
 - Never modify the real project's `config.json`/`state.json` directly to test a save flow. Copy the relevant files into the scratchpad directory, run an isolated `php -S localhost:<port>` there, test against that copy, then clean up (kill the server, `rm -rf` the scratch dir). Confirm the real files are untouched afterward before reporting a task done.
 - This Mac's Docker runs `arm64` natively (Apple Silicon) — the same architecture as a 64-bit Raspberry Pi. Local Docker testing here is representative of real Pi behavior for architecture-sensitive issues (e.g. native library availability), which is how the `signal-cli` Java-version and missing-`arm64`-native-lib bugs were caught before ever reaching the Pi.
+- When testing anything `index.php` reaches via `exec()` (like `signal-cli`), test it running *inside* the actual app container (`docker compose exec app <command>`), not by running PHP directly on the host. A `cli_path` of `docker run ... signal-image` tested fine for a long time only because testing always invoked PHP on the host, where `docker` is on `PATH` — the real app container has no `docker` CLI and no host Docker socket access, so it silently couldn't have worked there. Testing through the real execution context would have caught this immediately.
 
 ## Release process
 

@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.13.3] - 2026-09-17
+## [0.14.0] - 2026-09-17
+
+### Fixed
+- `signal.json`'s `cli_path` of `docker run --rm ... signal-image` could never have worked once the app itself ran in Docker: PHP's `exec()` runs *inside* the app container, which has no `docker` CLI and no access to the host's Docker daemon. This only ever appeared to work because all testing so far invoked PHP directly on the host, not through the containerized app.
+
+### Changed
+- `signal-cli` is now baked directly into the app's own Docker image. `Dockerfile` builds on `php:apache`, copies a matching JRE from `eclipse-temurin:25-jre` in a build stage (Debian's own JRE packages don't go new enough for `signal-cli`), and installs `signal-cli` with the same arm64/armhf native-lib handling as before. `docker-compose.yml`'s `app` service now builds this image (`build: .`) instead of pulling stock `php:apache`.
+- The old standalone `Dockerfile` (signal-cli only) is renamed to `Dockerfile.signal-cli`, still built by `signal-cli-docker.sh` — kept as an optional utility for testing `signal-cli` without the full app stack, but no longer required for normal operation.
+- `signal.json`'s `cli_path` is now `"signal-cli --config /var/www/html/signal-state"` (using `signal-cli`'s own `--config` flag to point at the bind-mounted linked-account state) instead of a `docker run -v ...` wrapper. Account linking now happens directly through the running app container: `docker compose exec app signal-cli --config /var/www/html/signal-state link`.
+
+Verified end-to-end: built via `docker compose build`, confirmed `signal-cli`/`java`/`php` all work inside the resulting container, confirmed the arm64 native-lib fix carried over (throwaway unlinked account correctly reaches "not registered" rather than a native-library error), and confirmed `signal-cli` is directly callable via `docker compose exec app signal-cli ...` — the exact context `index.php`'s `exec()` runs in.
 
 ### Fixed
 - `signal.log` from 0.13.2 could break the save entirely: if the file wasn't writable (e.g. a fresh Docker container where it didn't exist yet with the right permissions), `file_put_contents()` raised a warning that printed into the response body before the redirect's `header()` call, causing "headers already sent" and breaking the save. `signal_log()` now suppresses that warning and falls back to PHP's error log instead of ever surfacing to the response. `docker-entrypoint.sh` also now pre-creates `signal.log` and `chmod 666`s it alongside `config.json`/`state.json`, so this shouldn't happen on a fresh container at all.
