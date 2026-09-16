@@ -7,6 +7,11 @@
         "name": "Example Printer 2",
         "extruder_count": 5,
         "slack": false,
+        "signal": false
+    },
+    "printer_3": {
+        "name": "Example Printer 3",
+        "extruder_count": 1,
         "signal_channel": "another-group-id-base64=="
     },
     "club_label": "belongs to Example Makerspace e.V.",

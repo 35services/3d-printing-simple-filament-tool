@@ -147,6 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                     'hex' => $item['hex'],
                     'color_name' => $item['color_name'],
                     'slack_enabled' => ($printer_meta['slack'] ?? true) !== false,
+                    'signal_enabled' => ($printer_meta['signal'] ?? true) !== false,
                     'signal_channel' => $signal_channel === '' ? null : $signal_channel,
                 ];
             }
@@ -166,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
 
     $signal_groups = [];
     foreach ($color_changes as $change) {
-        if ($change['signal_channel'] === false) {
+        if (!$change['signal_enabled']) {
             continue;
         }
         $key = $change['signal_channel'] ?? '';

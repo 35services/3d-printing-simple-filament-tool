@@ -68,18 +68,24 @@ Built and verified on both `amd64` and `arm64` (e.g. a 64-bit Raspberry Pi OS) â
    (use an absolute path here, not `$(pwd)` â€” that would expand to PHP's own working directory, not where `signal-state` actually lives.)
 
 ### Per-printer notification overrides
-Each printer entry in `config.json` can add `slack` and/or `signal_channel` to override the defaults from `slack.json`/`signal.json` for just that printer:
+Each printer entry in `config.json` can add `slack`, `signal`, and/or `signal_channel` to override the defaults from `slack.json`/`signal.json` for just that printer:
 
 ```json
 "printer_2": {
     "name": "Example Printer 2",
     "extruder_count": 5,
     "slack": false,
+    "signal": false
+},
+"printer_3": {
+    "name": "Example Printer 3",
+    "extruder_count": 1,
     "signal_channel": "another-group-id-base64=="
 }
 ```
 
 * `slack`: set to `false` to skip Slack notifications for that printer's color changes. Omit (or `true`) to use the default (notify).
-* `signal_channel`: set to a different Signal group id to route that printer's notifications there instead of `signal.json`'s `group_id`, or `false` to skip Signal notifications for that printer entirely. Omit to use the default group.
+* `signal`: set to `false` to skip Signal notifications for that printer's color changes. Omit (or `true`) to use the default (notify).
+* `signal_channel`: set to a different Signal group id to route that printer's notifications there instead of `signal.json`'s `group_id`. Omit to use the default group.
 
 A save that changes colors on printers with different `signal_channel`s sends one batched Signal message per destination group.

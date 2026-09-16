@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.12.3] - 2026-09-16
+## [0.13.0] - 2026-09-16
+
+### Changed
+- Replaced overloaded `signal_channel: false` with a separate `"signal": false` boolean, symmetric with the existing `"slack": false`. `signal_channel` now only ever holds a group-id override string (or is omitted) — it no longer doubles as an on/off switch.
+- `signal-cli-docker.sh` now just runs `docker build -t signal-image .` instead of regenerating `Dockerfile` from a hardcoded heredoc, which had drifted out of sync and was silently reverting the Java-25/arm64-native-lib fix from 0.12.3 every time the script ran.
+
+Verified all combinations (default, `slack:false`, `signal:false`, `signal_channel` override) with a mock `signal-cli` capturing invocation arguments.
 
 ### Fixed
 - The `signal-cli` Docker image failed to run at all: `UnsupportedClassVersionError` (base image had Java 21, but signal-cli 0.14.8 requires Java 25 — bumped `eclipse-temurin:21-jre` to `25-jre`), then `Missing required native library dependency: libsignal-client` on arm64 (signal-cli's release only bundles that native lib for `amd64` Linux). The `Dockerfile` now detects the build architecture and, for `arm64`/`armhf`, downloads a matching prebuilt native lib from `exquo/signal-libs-build` into the image.
