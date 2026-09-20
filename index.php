@@ -63,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['config_json'])) {
             fwrite($file_handle, json_encode($decoded_config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
             fclose($file_handle);
         }
-        header("Location: " . $_SERVER['PHP_SELF'] . "?page=config&saved=1");
+        // Relative on purpose: behind a path-stripping proxy (e.g. /filaments/) PHP_SELF would point outside the prefix.
+        header("Location: ?page=config&saved=1");
         exit;
     }
 
@@ -177,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
         notify_signal_color_changes($changes, $group_id === '' ? null : $group_id);
     }
 
-    header("Location: " . $_SERVER['PHP_SELF']);
+    header("Location: ./");
     exit;
 }
 ?>
@@ -464,7 +465,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
     <?php if ($page === 'config'): ?>
         <div class="page-header">
             <h1>Edit Config</h1>
-            <a class="btn-secondary" href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">Back to overview</a>
+            <a class="btn-secondary" href="./">Back to overview</a>
         </div>
 
         <?php if ($config_error !== ''): ?>
