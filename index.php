@@ -178,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
         notify_signal_color_changes($changes, $group_id === '' ? null : $group_id);
     }
 
-    header("Location: ./");
+    header("Location: ./?saved=1");
     exit;
 }
 ?>
@@ -288,10 +288,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
             color: #b91c1c;
         }
 
-        .alert-success {
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 1.5rem;
+            transform: translateX(-50%);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
             background: #f0fdf4;
             border: 1px solid #bbf7d0;
             color: #15803d;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            pointer-events: none;
+            animation: toast-life 3.5s ease forwards;
+        }
+
+        @keyframes toast-life {
+            0%   { opacity: 0; transform: translate(-50%, 12px); }
+            8%   { opacity: 1; transform: translate(-50%, 0); }
+            85%  { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, 0); }
         }
 
         .printer-card {
@@ -470,8 +488,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
 
         <?php if ($config_error !== ''): ?>
             <div class="alert alert-error"><?php echo htmlspecialchars($config_error); ?></div>
-        <?php elseif ($config_saved): ?>
-            <div class="alert alert-success">Config saved.</div>
         <?php endif; ?>
 
         <form method="POST" action="?page=config" class="config-form">
@@ -592,6 +608,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
         <?php endforeach; ?>
         <button type="submit">Save</button>
     </form>
+    <?php endif; ?>
+    <?php if ($config_saved && $config_error === ''): ?>
+        <div class="toast" role="status">&#10003; <?php echo $page === 'config' ? 'Config saved' : 'Saved'; ?></div>
+        <script>
+            // Drop ?saved=1 so a reload doesn't replay the toast.
+            var params = new URLSearchParams(location.search);
+            params.delete('saved');
+            var query = params.toString();
+            history.replaceState(null, '', location.pathname + (query ? '?' + query : ''));
+        </script>
     <?php endif; ?>
     <footer class="app-version">v<?php echo htmlspecialchars($app_version); ?></footer>
 </body>
