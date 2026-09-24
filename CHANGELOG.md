@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-09-23
+
+### Added
+- "Leer" option at the top of the color dropdown, for an empty extruder slot.
+
+### Changed
+- Editing the color name drops the color image unless the name exactly matches a dropdown entry (then that entry's image and dropdown selection are used). The server enforces the same rule on save: the stored image always comes from the matching `color_list` entry, never from the submitted form.
+
 ## [0.14.2] - 2026-09-17
 
 ### Fixed

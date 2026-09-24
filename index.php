@@ -106,8 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                         $clean_item['color_name'] = htmlspecialchars($item['color_name'], ENT_QUOTES, 'UTF-8');
                     }
 
-                    if (isset($item['image']) && preg_match('#^https://#', $item['image'])) {
-                        $clean_item['image'] = htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8');
+                    // Only a name from the color list keeps an image, and it's always that
+                    // entry's image; a typed/edited name drops it.
+                    $list_image = $color_images_by_name[$item['color_name'] ?? ''] ?? '';
+                    if (preg_match('#^https://#', $list_image)) {
+                        $clean_item['image'] = htmlspecialchars($list_image, ENT_QUOTES, 'UTF-8');
                     }
 
                     if (isset($item['material']) && in_array($item['material'], $material_list)) {
@@ -537,7 +540,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
 
                             <div class="field">
                                 <label>Color name</label>
-                                <select onchange="
+                                <select id="colorselect_<?php echo $block_id; ?>" onchange="
                                     if (!this.value) { return; }
                                     document.getElementById('colorname_<?php echo $block_id; ?>').value = this.value;
                                     var opt = this.options[this.selectedIndex];
@@ -553,6 +556,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                                     thumb.hidden = !image;
                                 ">
                                     <option value="">-- Choose color --</option>
+                                    <option value="Leer" <?php echo $saved_data['color_name'] === 'Leer' ? 'selected' : ''; ?>>Leer</option>
                                     <?php foreach ($color_list as $color):
                                         $color_name = is_array($color) ? ($color['name'] ?? '') : $color;
                                         $color_hex = is_array($color) ? ($color['hex'] ?? '') : '';
@@ -567,7 +571,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
 
                             <div class="field">
                                 <label>&nbsp;</label>
-                                <input type="text" id="colorname_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][color_name]" value="<?php echo htmlspecialchars($saved_data['color_name']); ?>" placeholder="Color Name (or pick above)">
+                                <input type="text" id="colorname_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][color_name]" value="<?php echo htmlspecialchars($saved_data['color_name']); ?>" placeholder="Color Name (or pick above)" oninput="
+                                    // Keep the image only while the name matches a dropdown entry.
+                                    var select = document.getElementById('colorselect_<?php echo $block_id; ?>');
+                                    var name = this.value;
+                                    var match = Array.prototype.filter.call(select.options, function (opt) { return opt.value !== '' && opt.value === name; })[0];
+                                    select.value = match ? match.value : '';
+                                    var image = match ? (match.dataset.image || '') : '';
+                                    var thumb = document.getElementById('thumb_<?php echo $block_id; ?>');
+                                    document.getElementById('colorimage_<?php echo $block_id; ?>').value = image;
+                                    thumb.src = image;
+                                    thumb.hidden = !image;
+                                ">
                                 <input type="hidden" id="colorimage_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][image]" value="<?php echo htmlspecialchars($saved_data['image']); ?>">
                             </div>
 
