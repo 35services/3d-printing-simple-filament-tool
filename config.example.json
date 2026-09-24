@@ -241,36 +241,6 @@
             "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/4909.png"
         },
         {
-            "name": "Prusa Orange 2kg",
-            "hex": "#e8742a",
-            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/5385.png"
-        },
-        {
-            "name": "Jet Black 2kg",
-            "hex": "#1b1a1a",
-            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/5386.png"
-        },
-        {
-            "name": "Urban Grey 2kg",
-            "hex": "#8d8d8d",
-            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/9d97479f-7ded-47d4-8322-1d1cd1d5419c.png"
-        },
-        {
-            "name": "Signal White 2kg",
-            "hex": "#eeeeee",
-            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/2c111714-4c67-4dc3-ae6a-9a860a415502.png"
-        },
-        {
-            "name": "Clear 2kg",
-            "hex": "#ececec",
-            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/0a83fdfd-6370-43ff-b08a-7ead5ff3e7c9.png"
-        },
-        {
-            "name": "Anthracite Grey 2kg",
-            "hex": "#3d474c",
-            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/e09b930e-0aff-4d60-9abd-54b6929bc2e4.png"
-        },
-        {
             "name": "Prusa Pro Green",
             "hex": "#17e7b6",
             "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/4fb83b0a-52e5-4e00-b4d8-4aebb18beb83.png"
@@ -294,11 +264,6 @@
             "name": "Emerald Green",
             "hex": "#1f5c46",
             "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/29ea6152-eb76-4354-8f8a-a36ec09740b7.png"
-        },
-        {
-            "name": "Galaxy Black 2kg",
-            "hex": "#454545",
-            "image": "https://www.prusa3d.com/cdn-cgi/image/width=180,format=auto,quality=85/content/images/parameterValueColor/5399.png"
         },
         {
             "name": "Noctua Beige",

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-09-24
+
+### Removed
+- The seven "… 2kg" spool variants from `config.example.json`'s `color_list`; each duplicated a 1 kg color of the same name. Existing deployments keep their own `config.json`.
+
 ## [0.15.0] - 2026-09-23
 
 ### Added
