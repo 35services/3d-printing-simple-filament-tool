@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-09-28
+
+### Changed
+- Moved the empty-slot marker from the color dropdown to Material: "Leer" is now a Material option instead of a Color name option. Selecting it hides every other field in the extruder (color picker, color name, club checkbox, owner) so only Material shows; picking a real material again restores them (the owner field still respects the club checkbox's own hidden/disabled state, independent of this). No migration for the old color-dropdown "Leer" value - existing saves using it are unaffected but no longer editable as "empty" through the UI.
+
+### Fixed
+- `.row[hidden]` had no effect: `.row`'s own `display: flex` (an author rule) overshadowed the browser's default `[hidden] { display: none }` (a user-agent rule), which author styles always win over regardless of selector specificity - the same issue `.field[hidden]` already had a rule for, just not `.row`. Only surfaced now because this release is the first to hide a `.row` via script/PHP rather than just a `.field`.
+
 ## [0.15.1] - 2026-09-24
 
 ### Removed

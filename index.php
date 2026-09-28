@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                         $clean_item['image'] = htmlspecialchars($list_image, ENT_QUOTES, 'UTF-8');
                     }
 
-                    if (isset($item['material']) && in_array($item['material'], $material_list)) {
+                    if (isset($item['material']) && ($item['material'] === 'Leer' || in_array($item['material'], $material_list))) {
                         $clean_item['material'] = $item['material'];
                     }
 
@@ -360,6 +360,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
 
         .row:last-child { margin-bottom: 0; }
 
+        .row[hidden] {
+            display: none;
+        }
+
         .field {
             display: flex;
             flex-direction: column;
@@ -522,25 +526,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                     if ($saved_data['image'] === '' && isset($color_images_by_name[$saved_data['color_name']])) {
                         $saved_data['image'] = $color_images_by_name[$saved_data['color_name']];
                     }
+                    // "Leer" (empty slot) lives on the material now, not the color - selecting
+                    // it hides every other field in the extruder, so only Material shows.
+                    $is_empty_material = $saved_data['material'] === 'Leer';
+                    $hide_owner = $saved_data['is_club'] === '1' || $is_empty_material;
+                    $disabled_if_empty = $is_empty_material ? 'disabled' : '';
                 ?>
                     <div class="extruder-card">
                         <?php if ($extruder_limit > 1): ?>
                             <h3>Extruder <?php echo $index + 1; ?></h3>
                         <?php endif; ?>
 
-                        <div class="row">
+                        <div class="row" id="colorrow_<?php echo $block_id; ?>" <?php echo $is_empty_material ? 'hidden' : ''; ?>>
                             <div class="field">
                                 <label>Color</label>
                                 <div class="swatch-group">
-                                    <input type="color" id="pick_<?php echo $block_id; ?>" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('txt_<?php echo $block_id; ?>').value = this.value">
-                                    <input type="text" id="txt_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][hex]" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('pick_<?php echo $block_id; ?>').value = this.value">
+                                    <input type="color" id="pick_<?php echo $block_id; ?>" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('txt_<?php echo $block_id; ?>').value = this.value" <?php echo $disabled_if_empty; ?>>
+                                    <input type="text" id="txt_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][hex]" value="<?php echo htmlspecialchars($saved_data['hex']); ?>" oninput="document.getElementById('pick_<?php echo $block_id; ?>').value = this.value" <?php echo $disabled_if_empty; ?>>
                                     <img id="thumb_<?php echo $block_id; ?>" class="color-thumb" src="<?php echo htmlspecialchars($saved_data['image']); ?>" alt="" <?php echo $saved_data['image'] === '' ? 'hidden' : ''; ?>>
                                 </div>
                             </div>
 
                             <div class="field">
                                 <label>Color name</label>
-                                <select id="colorselect_<?php echo $block_id; ?>" onchange="
+                                <select id="colorselect_<?php echo $block_id; ?>" <?php echo $disabled_if_empty; ?> onchange="
                                     if (!this.value) { return; }
                                     document.getElementById('colorname_<?php echo $block_id; ?>').value = this.value;
                                     var opt = this.options[this.selectedIndex];
@@ -556,7 +565,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                                     thumb.hidden = !image;
                                 ">
                                     <option value="">-- Choose color --</option>
-                                    <option value="Leer" <?php echo $saved_data['color_name'] === 'Leer' ? 'selected' : ''; ?>>Leer</option>
                                     <?php foreach ($color_list as $color):
                                         $color_name = is_array($color) ? ($color['name'] ?? '') : $color;
                                         $color_hex = is_array($color) ? ($color['hex'] ?? '') : '';
@@ -571,7 +579,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
 
                             <div class="field">
                                 <label>&nbsp;</label>
-                                <input type="text" id="colorname_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][color_name]" value="<?php echo htmlspecialchars($saved_data['color_name']); ?>" placeholder="Color Name (or pick above)" oninput="
+                                <input type="text" id="colorname_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][color_name]" value="<?php echo htmlspecialchars($saved_data['color_name']); ?>" placeholder="Color Name (or pick above)" <?php echo $disabled_if_empty; ?> oninput="
                                     // Keep the image only while the name matches a dropdown entry.
                                     var select = document.getElementById('colorselect_<?php echo $block_id; ?>');
                                     var name = this.value;
@@ -583,12 +591,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                                     thumb.src = image;
                                     thumb.hidden = !image;
                                 ">
-                                <input type="hidden" id="colorimage_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][image]" value="<?php echo htmlspecialchars($saved_data['image']); ?>">
+                                <input type="hidden" id="colorimage_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][image]" value="<?php echo htmlspecialchars($saved_data['image']); ?>" <?php echo $disabled_if_empty; ?>>
                             </div>
+                        </div>
 
+                        <div class="row">
                             <div class="field">
                                 <label>Material</label>
-                                <select name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][material]">
+                                <select id="material_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][material]" onchange="updateMaterialEmpty('<?php echo $block_id; ?>')">
+                                    <option value="Leer" <?php echo $saved_data['material'] === 'Leer' ? 'selected' : ''; ?>>Leer</option>
                                     <?php foreach ($material_list as $mat): ?>
                                         <option value="<?php echo htmlspecialchars($mat); ?>" <?php echo $saved_data['material'] === $mat ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($mat); ?>
@@ -598,23 +609,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row" id="extrasrow_<?php echo $block_id; ?>" <?php echo $is_empty_material ? 'hidden' : ''; ?>>
                             <div class="club-field">
                                 <label>
-                                    <input type="hidden" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="0">
-                                    <input type="checkbox" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="1" <?php echo $saved_data['is_club'] === '1' ? 'checked' : ''; ?> onchange="
-                                        var ownerField = document.getElementById('ownerfield_<?php echo $block_id; ?>');
-                                        var ownerInput = document.getElementById('owner_<?php echo $block_id; ?>');
-                                        ownerField.hidden = this.checked;
-                                        ownerInput.disabled = this.checked;
-                                    ">
+                                    <input type="hidden" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="0" <?php echo $disabled_if_empty; ?>>
+                                    <input type="checkbox" id="club_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][is_club]" value="1" <?php echo $saved_data['is_club'] === '1' ? 'checked' : ''; ?> <?php echo $disabled_if_empty; ?> onchange="applyClubState('<?php echo $block_id; ?>')">
                                     <?php echo htmlspecialchars($club_label); ?>
                                 </label>
                             </div>
 
-                            <div class="field" id="ownerfield_<?php echo $block_id; ?>" <?php echo $saved_data['is_club'] === '1' ? 'hidden' : ''; ?>>
+                            <div class="field" id="ownerfield_<?php echo $block_id; ?>" <?php echo $hide_owner ? 'hidden' : ''; ?>>
                                 <label>Owner</label>
-                                <input type="text" id="owner_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][owner]" value="<?php echo htmlspecialchars($saved_data['owner']); ?>" placeholder="Owner text" <?php echo $saved_data['is_club'] === '1' ? 'disabled' : ''; ?>>
+                                <input type="text" id="owner_<?php echo $block_id; ?>" name="data[<?php echo $machine_id; ?>][<?php echo $index; ?>][owner]" value="<?php echo htmlspecialchars($saved_data['owner']); ?>" placeholder="Owner text" <?php echo $hide_owner ? 'disabled' : ''; ?>>
                             </div>
                         </div>
                     </div>
@@ -623,6 +629,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
         <?php endforeach; ?>
         <button type="submit">Save</button>
     </form>
+    <script>
+        // Owner is also hidden/disabled while the club checkbox is checked (independent
+        // of the "Leer" material below, which re-applies this after re-enabling the row).
+        function applyClubState(blockId) {
+            var isClub = document.getElementById('club_' + blockId).checked;
+            document.getElementById('ownerfield_' + blockId).hidden = isClub;
+            document.getElementById('owner_' + blockId).disabled = isClub;
+        }
+        // Selecting "Leer" (empty slot) hides every other field in the extruder -
+        // color and owner/club - leaving only Material, and disables their inputs so
+        // stale values aren't submitted; deselecting it shows everything again.
+        function updateMaterialEmpty(blockId) {
+            var isEmpty = document.getElementById('material_' + blockId).value === 'Leer';
+            ['colorrow_', 'extrasrow_'].forEach(function (prefix) {
+                var row = document.getElementById(prefix + blockId);
+                row.hidden = isEmpty;
+                row.querySelectorAll('input, select').forEach(function (el) { el.disabled = isEmpty; });
+            });
+            if (!isEmpty) {
+                applyClubState(blockId);
+            }
+        }
+    </script>
     <?php endif; ?>
     <?php if ($config_saved && $config_error === ''): ?>
         <div class="toast" role="status">&#10003; <?php echo $page === 'config' ? 'Config saved' : 'Saved'; ?></div>
