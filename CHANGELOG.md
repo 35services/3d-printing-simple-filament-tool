@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.1] - 2026-09-28
+
+### Fixed
+- A save with a Slack-notified color change broke the post-save redirect ("Cannot modify header information - headers already sent"), though the save itself still went through. Caused by 0.17.0's new `curl_close()` call in `slack_fetch_binary()`: a no-op since PHP 8.0, deprecated as of PHP 8.5 (which this app runs), and this deployment's `display_errors=On` (the `php:apache` image's default) echoes that notice straight into the response body, ahead of the `header()` call - `php -S`, used to test 0.17.0 locally, doesn't do that, which is why it wasn't caught before release. Fix is just removing the unnecessary call; reproduced and confirmed fixed by running the real app image (Apache, not the CLI dev server) against scratch data with a mock Slack server.
+
 ## [0.17.0] - 2026-09-28
 
 ### Added

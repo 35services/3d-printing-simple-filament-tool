@@ -49,7 +49,10 @@ function slack_fetch_binary($url) {
     $data = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $content_type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-    curl_close($ch);
+    // No curl_close(): a no-op since PHP 8.0 (handles are garbage-collected), and calling
+    // it is deprecated as of PHP 8.5 - the notice broke the header() redirect right after
+    // this ran, since this deployment's php.ini has display_errors=On (echoes into the
+    // response body, unlike the CLI server used to test this locally).
     if ($data === false || $http_code !== 200 || $data === '') {
         return null;
     }
