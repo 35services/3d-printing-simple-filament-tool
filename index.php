@@ -136,9 +136,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
         foreach ($extruder_group as $index => $item) {
             $previous = $current_state[$printer_id][$index] ?? null;
             $is_new_default = $previous === null && $item['hex'] === '#ffffff' && $item['color_name'] === '';
+            // Becoming (or leaving) "Leer" always counts as a change, even if hex/color_name
+            // happen to already be the blank/white default either side of it - e.g. a printer
+            // that had genuine white filament recorded (hex/color_name already default-looking)
+            // still needs a notification when its extruder actually goes empty.
+            $became_or_left_empty = $previous !== null
+                && ($item['material'] === 'Leer') !== (($previous['material'] ?? '') === 'Leer');
             $changed = $previous === null
                 ? !$is_new_default
-                : ($previous['hex'] !== $item['hex'] || $previous['color_name'] !== $item['color_name']);
+                : ($previous['hex'] !== $item['hex'] || $previous['color_name'] !== $item['color_name'] || $became_or_left_empty);
 
             if ($changed) {
                 $printer_meta = $printer_config[$printer_id] ?? [];
@@ -150,6 +156,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                     'extruder_count' => $printer_meta['extruder_count'] ?? 1,
                     'hex' => $item['hex'],
                     'color_name' => $item['color_name'],
+                    'image' => $item['image'],
+                    'material' => $item['material'],
                     'slack_enabled' => ($printer_meta['slack'] ?? true) !== false,
                     'signal_enabled' => ($printer_meta['signal'] ?? true) !== false,
                     'signal_channel' => $signal_channel === '' ? null : $signal_channel,

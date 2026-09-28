@@ -38,6 +38,29 @@ function slack_solid_color_png($hex, $size = 50) {
     return "\x89PNG\r\n\x1a\n" . $chunk('IHDR', $ihdr) . $chunk('IDAT', $idat) . $chunk('IEND', '');
 }
 
+function slack_fetch_binary($url) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 8,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 3,
+    ]);
+    $data = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $content_type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+    curl_close($ch);
+    if ($data === false || $http_code !== 200 || $data === '') {
+        return null;
+    }
+    return ['data' => $data, 'content_type' => $content_type];
+}
+
+function slack_ext_for_mime($mime) {
+    $map = ['image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp', 'image/gif' => 'gif'];
+    return $map[$mime] ?? 'png';
+}
+
 function slack_post_text($bot_token, $channel, $text, $api_base = 'https://slack.com/api') {
     $ch = curl_init($api_base . '/chat.postMessage');
     curl_setopt_array($ch, [
@@ -70,10 +93,27 @@ function slack_upload_swatches($bot_token, $channel, $changes, $text, $api_base 
     $file_ids = [];
 
     foreach ($changes as $change) {
-        $png = slack_solid_color_png($change['hex']);
-        if ($png === null) {
+        // Prefer the color list's real preview image (e.g. a manufacturer photo) over a
+        // generated solid-color square, when the change's color name matched one that has one.
+        $mime = 'image/png';
+        $binary = null;
+        $name_prefix = 'swatch-';
+        if (!empty($change['image']) && preg_match('#^https://#', $change['image'])) {
+            $fetched = slack_fetch_binary($change['image']);
+            if ($fetched !== null) {
+                $binary = $fetched['data'];
+                $mime = $fetched['content_type'] ?: 'image/png';
+                $name_prefix = 'preview-';
+            }
+        }
+        if ($binary === null) {
+            $binary = slack_solid_color_png($change['hex']);
+            $mime = 'image/png';
+        }
+        if ($binary === null) {
             continue;
         }
+        $filename = $name_prefix . ltrim($change['hex'], '#') . '.' . slack_ext_for_mime($mime);
 
         $ch = curl_init($api_base . '/files.getUploadURLExternal');
         curl_setopt_array($ch, [
@@ -82,8 +122,8 @@ function slack_upload_swatches($bot_token, $channel, $changes, $text, $api_base 
             CURLOPT_POST => true,
             CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $bot_token],
             CURLOPT_POSTFIELDS => [
-                'filename' => 'swatch-' . ltrim($change['hex'], '#') . '.png',
-                'length' => (string) strlen($png),
+                'filename' => $filename,
+                'length' => (string) strlen($binary),
             ],
         ]);
         $url_response = json_decode(curl_exec($ch), true);
@@ -93,7 +133,7 @@ function slack_upload_swatches($bot_token, $channel, $changes, $text, $api_base 
         }
 
         $tmp_path = tempnam(sys_get_temp_dir(), 'swatch');
-        file_put_contents($tmp_path, $png);
+        file_put_contents($tmp_path, $binary);
 
         $ch = curl_init($url_response['upload_url']);
         curl_setopt_array($ch, [
@@ -101,7 +141,7 @@ function slack_upload_swatches($bot_token, $channel, $changes, $text, $api_base 
             CURLOPT_TIMEOUT => 5,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => [
-                'file' => new CURLFile($tmp_path, 'image/png', basename($tmp_path) . '.png'),
+                'file' => new CURLFile($tmp_path, $mime, $filename),
             ],
         ]);
         curl_exec($ch);
@@ -151,19 +191,29 @@ function notify_slack_color_changes($changes) {
     }
 
     $lines = array_map(function ($change) {
-        $color = $change['color_name'] !== ''
-            ? "{$change['color_name']} (`{$change['hex']}`)"
-            : "`{$change['hex']}`";
         $location = $change['extruder_count'] > 1
             ? "{$change['printer']} – Extruder {$change['extruder']}"
             : $change['printer'];
+        if ($change['material'] === 'Leer') {
+            return "• *{$location}*: now empty";
+        }
+        $color = $change['color_name'] !== ''
+            ? "{$change['color_name']} (`{$change['hex']}`)"
+            : "`{$change['hex']}`";
         return "• *{$location}*: {$color}";
     }, $changes);
 
     $text = "🎨 Filament changed:\n" . implode("\n", $lines);
     $api_base = $slack_config['api_base'] ?? 'https://slack.com/api';
 
-    $sent = slack_upload_swatches($slack_config['bot_token'], $slack_config['channel'], $changes, $text, $api_base);
+    // No color, no attachment for an extruder that just went empty - only changes that
+    // still have a color are worth a swatch/preview image.
+    $with_color = array_values(array_filter($changes, function ($change) {
+        return $change['material'] !== 'Leer';
+    }));
+
+    $sent = !empty($with_color)
+        && slack_upload_swatches($slack_config['bot_token'], $slack_config['channel'], $with_color, $text, $api_base);
     if (!$sent) {
         slack_post_text($slack_config['bot_token'], $slack_config['channel'], $text, $api_base);
     }

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-09-28
+
+### Added
+- Slack: a color change now attaches the color list entry's own preview image (e.g. a manufacturer photo), when it has one, instead of a generated solid-color swatch. Falls back to the swatch if the entry has no image or it fails to download.
+
+### Changed
+- An extruder switching to (or from) "Leer" (empty) now always sends a notification, even in the edge case where hex/color name already looked like the blank default on both sides of the change (e.g. a printer with real white filament recorded going empty). Slack and Signal both say "now empty" for it, with no color mentioned and no image/swatch attached.
+
 ## [0.16.0] - 2026-09-28
 
 ### Changed

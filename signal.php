@@ -33,12 +33,15 @@ function notify_signal_color_changes($changes, $group_id_override = null) {
     }
 
     $lines = array_map(function ($change) {
-        $color = $change['color_name'] !== ''
-            ? "{$change['color_name']} ({$change['hex']})"
-            : $change['hex'];
         $location = $change['extruder_count'] > 1
             ? "{$change['printer']} – Extruder {$change['extruder']}"
             : $change['printer'];
+        if ($change['material'] === 'Leer') {
+            return "- {$location}: now empty";
+        }
+        $color = $change['color_name'] !== ''
+            ? "{$change['color_name']} ({$change['hex']})"
+            : $change['hex'];
         return "- {$location}: {$color}";
     }, $changes);
 
